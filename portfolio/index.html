@@ -102,7 +102,7 @@
       if (!data || !Array.isArray(data.images)) return;
       const newest = new Map();
       data.images.forEach(image => {
-        const match = image.pathname.match(/^portfolio\\/([^/]+)\\//);
+        const match = image.pathname.match(/^portfolio\/([^/]+)\//);
         if (match && !newest.has(match[1])) newest.set(match[1], image.url);
       });
       projectVisuals.forEach(visual => {
