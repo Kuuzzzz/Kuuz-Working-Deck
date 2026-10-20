@@ -7,7 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{color-scheme:dark;--bg:#0b0c10;--panel:#13151b;--line:#282b35;--text:#f4f4f7;--muted:#9296a5;--accent:#b7f36b;--red:#ff7d85}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px Inter,system-ui,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer;border:1px solid var(--line);border-radius:9px;padding:10px 14px;background:#20232c;color:var(--text)}button:hover{border-color:var(--accent)}button.primary{background:var(--accent);color:#11150a;border:0;font-weight:750}button.danger{color:var(--red)}input,select,textarea{width:100%;background:#0c0e13;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:11px}label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}h1,h2,h3,p{margin-top:0}h1{font-size:26px;letter-spacing:-.8px;margin-bottom:6px}h2{font-size:17px}.muted{color:var(--muted)}.small{font-size:12px}.layout{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh}.sidebar{border-right:1px solid var(--line);padding:25px 15px;display:flex;flex-direction:column;gap:26px}.brand{font-weight:800;font-size:18px;padding:5px 10px}.brand span{color:var(--accent)}.nav{display:grid;gap:7px}.nav button{text-align:left;background:transparent;border-color:transparent;color:var(--muted)}.nav button.active{background:#20251b;color:var(--accent);border-color:#3a472b}.sidefoot{margin-top:auto;overflow-wrap:anywhere}.main{padding:30px;max-width:1400px;width:100%;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:26px}.actions{display:flex;gap:8px;flex-wrap:wrap}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:25px 0}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;min-width:0}.statnum{font-size:30px;font-weight:800;margin:14px 0 4px}.accent{color:var(--accent)}.section{margin:24px 0}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.field{min-width:0}.field.full{grid-column:1/-1}.tablewrap{overflow-x:auto}.table{width:100%;border-collapse:collapse;min-width:700px}.table th,.table td{text-align:left;border-bottom:1px solid var(--line);padding:13px 10px;vertical-align:top}.table th{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}.table td{max-width:260px;overflow-wrap:anywhere}.badge{display:inline-block;border-radius:20px;padding:5px 9px;font-size:11px;background:#292d37;color:#d6d7de}.badge.done{color:var(--accent);background:#26311e}.badge.high{color:#ff9da3;background:#382126}.hidden{display:none!important}.empty{text-align:center;color:var(--muted);padding:35px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.toolbar input{max-width:260px}.login{max-width:430px;margin:12vh auto;padding:28px}.login .field{margin:18px 0}.message{padding:12px;border-radius:9px;background:#20251b;color:var(--accent);margin:14px 0}.error{color:var(--red)}.modalback{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;padding:16px;z-index:5}.modal{width:min(620px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px}.modalhead{display:flex;justify-content:space-between;align-items:center}.footeractions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}.statusline{display:flex;align-items:center;gap:8px}.dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}@media(max-width:850px){.layout{grid-template-columns:1fr}.sidebar{border-right:0;border-bottom:1px solid var(--line);padding:12px;gap:10px}.brand{padding:4px}.nav{display:flex;overflow:auto}.nav button{white-space:nowrap;padding:9px}.sidefoot{display:none}.main{padding:18px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.top{align-items:flex-start;flex-direction:column}}@media(max-width:480px){.formgrid{grid-template-columns:1fr}.field.full{grid-column:auto}.stats{gap:8px}.card{padding:13px}.statnum{font-size:25px}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px Inter,system-ui,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer;border:1px solid var(--line);border-radius:9px;padding:10px 14px;background:#20232c;color:var(--text)}button:hover{border-color:var(--accent)}button.primary{background:var(--accent);color:#11150a;border:0;font-weight:750}button.danger{color:var(--red)}input,select,textarea{width:100%;background:#0c0e13;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:11px}label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}h1,h2,h3,p{margin-top:0}h1{font-size:26px;letter-spacing:-.8px;margin-bottom:6px}h2{font-size:17px}.muted{color:var(--muted)}.small{font-size:12px}.layout{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh}.sidebar{border-right:1px solid var(--line);padding:25px 15px;display:flex;flex-direction:column;gap:26px}.brand{font-weight:800;font-size:18px;padding:5px 10px}.brand span{color:var(--accent)}.nav{display:grid;gap:7px}.nav button{text-align:left;background:transparent;border-color:transparent;color:var(--muted)}.nav button.active{background:#20251b;color:var(--accent);border-color:#3a472b}.sidefoot{margin-top:auto;overflow-wrap:anywhere}.main{padding:30px;max-width:1400px;width:100%;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:26px}.actions{display:flex;gap:8px;flex-wrap:wrap}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:25px 0}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;min-width:0}.statnum{font-size:30px;font-weight:800;margin:14px 0 4px}.accent{color:var(--accent)}.section{margin:24px 0}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.field{min-width:0}.field.full{grid-column:1/-1}.tablewrap{overflow-x:auto}.table{width:100%;border-collapse:collapse;min-width:700px}.table th,.table td{text-align:left;border-bottom:1px solid var(--line);padding:13px 10px;vertical-align:top}.table th{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}.table td{max-width:260px;overflow-wrap:anywhere}.badge{display:inline-block;border-radius:20px;padding:5px 9px;font-size:11px;background:#292d37;color:#d6d7de}.badge.done{color:var(--accent);background:#26311e}.badge.high{color:#ff9da3;background:#382126}.hidden{display:none!important}.empty{text-align:center;color:var(--muted);padding:35px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.toolbar input{max-width:260px}.login{max-width:430px;margin:12vh auto;padding:28px}.login .field{margin:18px 0}.message{padding:12px;border-radius:9px;background:#20251b;color:var(--accent);margin:14px 0}.error{color:var(--red)}.modalback{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;padding:16px;z-index:5}.modal{width:min(620px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px}.modalhead{display:flex;justify-content:space-between;align-items:center}.footeractions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}.calendar-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}.cal-dayname{text-align:center;color:var(--muted);font-size:11px;padding:8px 0}.cal-day{min-height:76px;background:#0c0e13;border:1px solid var(--line);border-radius:9px;padding:7px;min-width:0;text-align:left;vertical-align:top}.cal-day:hover,.cal-day.selected{border-color:var(--accent)}.cal-day.today{box-shadow:inset 0 0 0 1px var(--accent)}.cal-day.outside{opacity:.4}.cal-num{font-size:12px;color:var(--muted);margin-bottom:5px}.cal-event{font-size:10px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:3px;padding:3px 4px;border-radius:4px;background:#252b1e;color:var(--accent)}.cal-event.kol-event{background:#252638;color:#c5c7ff}.agenda-item{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.agenda-item:last-child{border-bottom:0}.statusline{display:flex;align-items:center;gap:8px}.dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}@media(max-width:850px){.layout{grid-template-columns:1fr}.sidebar{border-right:0;border-bottom:1px solid var(--line);padding:12px;gap:10px}.brand{padding:4px}.nav{display:flex;overflow:auto}.nav button{white-space:nowrap;padding:9px}.sidefoot{display:none}.main{padding:18px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.top{align-items:flex-start;flex-direction:column}}@media(max-width:480px){.formgrid{grid-template-columns:1fr}.field.full{grid-column:auto}.stats{gap:8px}.card{padding:13px}.statnum{font-size:25px}}
 </style>
 </head>
 <body>
@@ -27,7 +27,9 @@
     <nav class="nav">
       <button class="active" data-page="dashboard">◫ &nbsp; Dashboard</button>
       <button data-page="tasks">☷ &nbsp; My Tasks</button>
+      <button data-page="calendar">▦ &nbsp; Calendar</button>
       <button data-page="kol">◉ &nbsp; KOL Tracker</button>
+      <button data-page="reports">▤ &nbsp; Reports</button>
     </nav>
     <div class="sidefoot small muted">
       <div class="statusline"><span class="dot"></span><span id="syncStatus">Connecting…</span></div>
@@ -57,6 +59,10 @@
       <div class="card"><div id="taskTable"></div></div>
     </section>
 
+    <section id="calendarPage" class="hidden"><div class="card section"><div class="calendar-head"><div><h2 id="calendarMonthTitle">Calendar</h2><p class="muted small">Task deadlines and KOL milestones in one view.</p></div><div class="actions"><button id="prevMonthBtn">←</button><button id="todayMonthBtn">Today</button><button id="nextMonthBtn">→</button></div></div><div class="calendar-grid" id="calendarGrid"></div><div class="small muted" style="margin-top:12px">Green = task deadline · Purple = KOL milestone</div></div><div class="card section"><div class="sectionhead"><h2 id="agendaTitle">Selected date</h2></div><div id="calendarAgenda"></div></div></section>
+
+    <section id="reportsPage" class="hidden"><div class="stats"><div class="card"><div class="muted">Completion rate</div><div class="statnum accent" id="reportCompletion">0%</div><div class="small muted">Tasks marked Done</div></div><div class="card"><div class="muted">Due this week</div><div class="statnum" id="reportDueWeek">0</div><div class="small muted">Open tasks with deadlines</div></div><div class="card"><div class="muted">KOL published</div><div class="statnum" id="reportPublished">0</div><div class="small muted">Published videos</div></div><div class="card"><div class="muted">KOL in revision</div><div class="statnum" id="reportRevision">0</div><div class="small muted">Needs follow-up</div></div></div><div class="card section"><div class="sectionhead"><h2>Task status breakdown</h2></div><div id="reportStatuses"></div></div><div class="card section"><div class="sectionhead"><h2>Client / project workload</h2></div><div id="reportClients"></div></div><div class="actions"><button id="exportCsvBtn">Export tasks CSV</button><button id="exportKolCsvBtn">Export KOL CSV</button></div></section>
+
     <section id="kolPage" class="hidden">
       <div class="sectionhead"><div><h2>KOL video tracking</h2><p class="muted small">Submission → client check → revision → publish</p></div><button class="primary" id="addKolBtn">＋ Add KOL video</button></div>
       <div class="card"><div id="kolTable"></div></div>
@@ -76,6 +82,7 @@ const SUPABASE_URL = "https://apaqmbxvveoveignotil.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_8QzaJLJaSAe6uNBD8iC2og_jqS1FfD8";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 let user = null, tasks = [], kols = [], page = "dashboard", editId = null, editType = "task";
+let calendarCursor = new Date(new Date().getFullYear(),new Date().getMonth(),1), selectedCalendarDate = today();
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const today = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
@@ -83,12 +90,12 @@ function msg(text,error=false){$("loginMsg").textContent=text;$("loginMsg").clas
 function setSync(s){$("syncStatus").textContent=s;}
 function showPage(p){
   page=p;
-  ["dashboard","tasks","kol"].forEach(x=>$(x+"Page").classList.toggle("hidden",x!==p));
+  ["dashboard","tasks","calendar","kol","reports"].forEach(x=>$(x+"Page").classList.toggle("hidden",x!==p));
   document.querySelectorAll("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===p));
-  $("pageTitle").textContent={dashboard:"Good work starts here.",tasks:"My tasks.",kol:"KOL content tracker."}[p];
-  $("pageSub").textContent={dashboard:"Your projects, deadlines and next moves.",tasks:"Keep every deliverable moving.",kol:"Track every video from submission to publishing."}[p];
+  $("pageTitle").textContent={dashboard:"Good work starts here.",tasks:"My tasks.",calendar:"Your calendar.",kol:"KOL content tracker.",reports:"Work reports."}[p];
+  $("pageSub").textContent={dashboard:"Your projects, deadlines and next moves.",tasks:"Keep every deliverable moving.",calendar:"See deadlines and KOL milestones.",kol:"Track every video from submission to publishing.",reports:"Understand delivery, workload and follow-ups."}[p];
   $("eyebrow").textContent="YOUR WORKSPACE / "+p.toUpperCase();
-  $("addTaskBtn").classList.toggle("hidden",p==="kol");
+  $("addTaskBtn").classList.toggle("hidden",p==="kol"||p==="calendar"||p==="reports");
   render();
 }
 async function signIn(){
@@ -171,6 +178,48 @@ function kolRows(list){
  if(!list.length)return '<div class="empty">No KOL videos yet. Add one to start tracking.</div>';
  return `<div class="tablewrap"><table class="table"><thead><tr><th>KOL / Video</th><th>Brand</th><th>Submit</th><th>Client check</th><th>Revision</th><th>Publish</th><th>Status</th><th>Actions</th></tr></thead><tbody>${list.map(k=>`<tr><td><strong>${esc(k.name)}</strong><div class="small muted">${esc(k.video)}</div></td><td>${esc(k.brand||"—")}</td><td>${esc(k.submit_date||"—")}</td><td>${esc(k.client_check_date||"—")}</td><td>${esc(k.revision_due_date||"—")}</td><td>${esc(k.publish_date||"—")}</td><td>${badge(k.status)}</td><td><button data-edit-kol="${esc(k.id)}">Edit</button> <button class="danger" data-delete-kol="${esc(k.id)}">Delete</button></td></tr>`).join("")}</tbody></table></div>`;
 }
+function allCalendarEvents(){
+ const ev=[];
+ tasks.forEach(t=>{if(t.due)ev.push({date:t.due,title:t.name||"Task",kind:"task",detail:(t.client||"Task")+(t.project?" · "+t.project:""),status:t.status||"To Do"});});
+ kols.forEach(k=>[["submit_date","Submit"],["client_check_date","Client check"],["revision_due_date","Revision"],["publish_date","Publish"]].forEach(([key,label])=>{if(k[key])ev.push({date:k[key],title:(k.name||"KOL")+" · "+label,kind:"kol",detail:(k.brand||"KOL")+" · "+label,status:k.status||"Not started"});}));
+ return ev;
+}
+function renderCalendar(){
+ const y=calendarCursor.getFullYear(),m=calendarCursor.getMonth(),first=new Date(y,m,1),start=new Date(y,m,1-first.getDay()),events=allCalendarEvents();
+ $("calendarMonthTitle").textContent=calendarCursor.toLocaleDateString(undefined,{month:"long",year:"numeric"});
+ const names=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+ $("calendarGrid").innerHTML=names.map(n=>'<div class="cal-dayname">'+n+'</div>').join("");
+ for(let i=0;i<42;i++){
+  const d=new Date(start);d.setDate(start.getDate()+i);
+  const key=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  const ev=events.filter(e=>e.date===key);
+  $("calendarGrid").insertAdjacentHTML("beforeend",'<button class="cal-day '+(d.getMonth()!==m?"outside ":"")+(key===today()?"today ":"")+(key===selectedCalendarDate?"selected":"")+'" data-calendar-date="'+key+'"><div class="cal-num">'+d.getDate()+'</div>'+ev.slice(0,2).map(e=>'<div class="cal-event '+(e.kind==="kol"?"kol-event":"")+'" title="'+esc(e.title)+'">'+esc(e.title)+'</div>').join("")+(ev.length>2?'<div class="small muted">+'+(ev.length-2)+' more</div>':"")+'</button>');
+ }
+ renderAgenda(events);
+}
+function renderAgenda(events=allCalendarEvents()){
+ $("agendaTitle").textContent=new Date(selectedCalendarDate+"T12:00:00").toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric",year:"numeric"});
+ const list=events.filter(e=>e.date===selectedCalendarDate);
+ $("calendarAgenda").innerHTML=list.length?list.map(e=>'<div class="agenda-item"><div><strong>'+esc(e.title)+'</strong><div class="small muted">'+esc(e.detail)+'</div></div>'+badge(e.status)+'</div>').join(""):'<div class="empty">Nothing scheduled for this date.</div>';
+}
+function renderReports(){
+ const done=tasks.filter(t=>t.status==="Done").length;
+ $("reportCompletion").textContent=(tasks.length?Math.round(done/tasks.length*100):0)+"%";
+ const end=new Date();end.setDate(end.getDate()+7);const endKey=end.getFullYear()+"-"+String(end.getMonth()+1).padStart(2,"0")+"-"+String(end.getDate()).padStart(2,"0");
+ $("reportDueWeek").textContent=tasks.filter(t=>t.due&&t.due>=today()&&t.due<=endKey&&t.status!=="Done").length;
+ $("reportPublished").textContent=kols.filter(k=>k.status==="Published").length;
+ $("reportRevision").textContent=kols.filter(k=>k.status==="Revision").length;
+ const statuses=["To Do","In Progress","Review","Done"];
+ $("reportStatuses").innerHTML=statuses.map(s=>{const n=tasks.filter(t=>t.status===s).length;return '<div class="agenda-item"><span>'+esc(s)+'</span><strong>'+n+'</strong></div>';}).join("");
+ const groups={};tasks.forEach(t=>{const key=(t.client||"No client")+(t.project?" / "+t.project:"");groups[key]=(groups[key]||0)+1;});
+ const entries=Object.entries(groups).sort((a,b)=>b[1]-a[1]);
+ $("reportClients").innerHTML=entries.length?entries.map(([name,n])=>'<div class="agenda-item"><span>'+esc(name)+'</span><strong>'+n+' task'+(n===1?"":"s")+'</strong></div>').join(""):'<div class="empty">Add tasks with client and project names to see workload.</div>';
+}
+function exportCsv(rows,fields,filename){
+ const csv=[fields.join(","),...rows.map(r=>fields.map(f=>'"'+String(r[f]??"").replace(/"/g,'""')+'"').join(","))].join("\r\n");
+ const blob=new Blob(["\\ufeff",csv],{type:"text/csv;charset=utf-8;"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+}
 function render(){
  $("statTotal").textContent=tasks.length;
  $("statProgress").textContent=tasks.filter(t=>t.status==="In Progress").length;
@@ -181,6 +230,7 @@ function render(){
  $("taskTable").innerHTML=taskRows(tasks.filter(t=>(!st||t.status===st)&&[t.name,t.client,t.project].join(" ").toLowerCase().includes(q)));
  $("kolTable").innerHTML=kolRows(kols);
  $("kolSummary").innerHTML=kolRows(kols.slice(0,4));
+ renderCalendar();renderReports();
 }
 function field(name,label,type="text",value="",opts=[]){
  let control=type==="select"?`<select name="${name}">${opts.map(o=>`<option ${o===value?"selected":""}>${esc(o)}</option>`).join("")}</select>`:`<input name="${name}" type="${type}" value="${esc(value)}" ${type==="date"?"":""}>`;
@@ -229,11 +279,17 @@ $("addKolBtn").addEventListener("click",()=>openEditor("kol"));
 $("allTasksBtn").addEventListener("click",()=>showPage("tasks"));
 $("allKolBtn").addEventListener("click",()=>showPage("kol"));
 $("taskSearch").addEventListener("input",render);$("taskStatusFilter").addEventListener("change",render);
+$("prevMonthBtn").addEventListener("click",()=>{calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()-1,1);renderCalendar();});
+$("nextMonthBtn").addEventListener("click",()=>{calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()+1,1);renderCalendar();});
+$("todayMonthBtn").addEventListener("click",()=>{calendarCursor=new Date(new Date().getFullYear(),new Date().getMonth(),1);selectedCalendarDate=today();renderCalendar();});
+$("exportCsvBtn").addEventListener("click",()=>exportCsv(tasks,["name","client","project","due","priority","status","type","notes"],"kuuz-tasks.csv"));
+$("exportKolCsvBtn").addEventListener("click",()=>exportCsv(kols,["name","brand","video","submit_date","client_check_date","revision_due_date","publish_date","status"],"kuuz-kol-tracker.csv"));
 $("closeModal").addEventListener("click",()=>$("modalBack").classList.add("hidden"));
 $("cancelModal").addEventListener("click",()=>$("modalBack").classList.add("hidden"));
 $("editForm").addEventListener("submit",submitForm);
 document.addEventListener("click",e=>{
  const b=e.target.closest("button");if(!b)return;
+ if(b.dataset.calendarDate){selectedCalendarDate=b.dataset.calendarDate;const d=new Date(selectedCalendarDate+"T12:00:00");calendarCursor=new Date(d.getFullYear(),d.getMonth(),1);renderCalendar();}
  if(b.dataset.editTask){const r=tasks.find(x=>x.id===b.dataset.editTask);if(r)openEditor("task",r);}
  if(b.dataset.deleteTask)deleteRecord("tasks",b.dataset.deleteTask);
  if(b.dataset.editKol){const r=kols.find(x=>x.id===b.dataset.editKol);if(r)openEditor("kol",r);}
