@@ -1,21 +1,40 @@
 # Kuuz_Portfolio
 
-An editorial-style, responsive portfolio starter for Kuuz. This site lives in the `portfolio/` folder so it does not overwrite the existing KUUZ.WORKSPACE app.
+An editorial-style, responsive portfolio for Kuuz. It lives in the `portfolio/` folder so it can be deployed separately from the existing KUUZ.WORKSPACE app.
 
-## Preview locally
-Open `portfolio/index.html` in a browser. It is a self-contained HTML/CSS/JavaScript page with no build step.
+## Image publishing
+
+The upload page at `/upload.html` supports permanent image uploads to Vercel Blob. Uploaded images are public and the newest image for each project automatically replaces that project's visual on the portfolio homepage.
+
+### Required Vercel setup
+
+1. Create a **separate Vercel project** from this repository. Do not change the existing KUUZ.WORKSPACE / `work-tracker` project.
+2. Set **Root Directory** to `portfolio`.
+3. Set **Framework Preset** to Other. Leave the Build Command blank and set Output Directory to `.`.
+4. In the new portfolio project, open **Storage** and create/connect a **Blob** store. This provides the `BLOB_READ_WRITE_TOKEN` environment variable. Redeploy after connecting it.
+5. In **Settings → Environment Variables**, add `PORTFOLIO_UPLOAD_PASSWORD` with a strong private password. Apply it to Production (and Preview only if desired), then redeploy.
+6. Open the deployed `/upload.html` page, enter that password, choose the project to update, select images and click **Upload & publish**.
+
+The upload API validates the password server-side. Do not put the password in HTML or share it with visitors. Only upload images you have permission to publish. Images uploaded to Blob are public.
+
+### Project mapping
+
+- `viso-pises` — Viso Pises — Growing Up Together
+- `walls-ice-cream` — Wall’s — Ice Cream
+- `isuzu` — Isuzu — Digital & Video Content
+- `breeze` — Breeze — KOL Campaigns
+- `cement-brands` — Cement Brands — Digital Content
+- `campaign-development` — Campaign Development & Production
 
 ## Before publishing
-1. Replace each designed placeholder panel with an approved project image or campaign visual.
-2. Verify each project summary and your exact role/contribution.
-3. Replace `hello@example.com` with your professional email.
-4. Remove or generalize any confidential client information, internal strategy, unreleased product details, or results that are not approved for public sharing.
-5. Test mobile layout, navigation, and project filters.
 
-## Vercel
-To deploy this as a separate portfolio site, create a new Vercel project from this repository and set the Root Directory to `portfolio`. Keep it separate from the existing production KUUZ.WORKSPACE project. Review the preview deployment before assigning a domain or making it public.
+- Replace `hello@example.com` with your professional email.
+- Verify each project summary and your exact role/contribution.
+- Remove confidential client information and use only approved work samples.
+- Test the mobile layout, project filters and upload workflow.
 
-## Project case-study template
+## Case-study template
+
 - Context / brief
 - Objective
 - Audience insight
