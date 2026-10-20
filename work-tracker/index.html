@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kuuz — Work Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{color-scheme:dark;--bg:#0b0c10;--panel:#13151b;--line:#282b35;--text:#f4f4f7;--muted:#9296a5;--accent:#b7f36b;--red:#ff7d85}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px Inter,system-ui,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer;border:1px solid var(--line);border-radius:9px;padding:10px 14px;background:#20232c;color:var(--text)}button:hover{border-color:var(--accent)}button.primary{background:var(--accent);color:#11150a;border:0;font-weight:750}button.danger{color:var(--red)}input,select,textarea{width:100%;background:#0c0e13;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:11px}label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}h1,h2,h3,p{margin-top:0}h1{font-size:26px;letter-spacing:-.8px;margin-bottom:6px}h2{font-size:17px}.muted{color:var(--muted)}.small{font-size:12px}.layout{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh}.sidebar{border-right:1px solid var(--line);padding:25px 15px;display:flex;flex-direction:column;gap:26px}.brand{font-weight:800;font-size:18px;padding:5px 10px}.brand span{color:var(--accent)}.nav{display:grid;gap:7px}.nav button{text-align:left;background:transparent;border-color:transparent;color:var(--muted)}.nav button.active{background:#20251b;color:var(--accent);border-color:#3a472b}.sidefoot{margin-top:auto;overflow-wrap:anywhere}.main{padding:30px;max-width:1400px;width:100%;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:26px}.actions{display:flex;gap:8px;flex-wrap:wrap}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:25px 0}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;min-width:0}.statnum{font-size:30px;font-weight:800;margin:14px 0 4px}.accent{color:var(--accent)}.section{margin:24px 0}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.field{min-width:0}.field.full{grid-column:1/-1}.tablewrap{overflow-x:auto}.table{width:100%;border-collapse:collapse;min-width:700px}.table th,.table td{text-align:left;border-bottom:1px solid var(--line);padding:13px 10px;vertical-align:top}.table th{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted)}.table td{max-width:260px;overflow-wrap:anywhere}.badge{display:inline-block;border-radius:20px;padding:5px 9px;font-size:11px;background:#292d37;color:#d6d7de}.badge.done{color:var(--accent);background:#26311e}.badge.high{color:#ff9da3;background:#382126}.hidden{display:none!important}.empty{text-align:center;color:var(--muted);padding:35px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.toolbar input{max-width:260px}.login{max-width:430px;margin:12vh auto;padding:28px}.login .field{margin:18px 0}.message{padding:12px;border-radius:9px;background:#20251b;color:var(--accent);margin:14px 0}.error{color:var(--red)}.modalback{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;padding:16px;z-index:5}.modal{width:min(620px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px}.modalhead{display:flex;justify-content:space-between;align-items:center}.footeractions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}.statusline{display:flex;align-items:center;gap:8px}.dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}@media(max-width:850px){.layout{grid-template-columns:1fr}.sidebar{border-right:0;border-bottom:1px solid var(--line);padding:12px;gap:10px}.brand{padding:4px}.nav{display:flex;overflow:auto}.nav button{white-space:nowrap;padding:9px}.sidefoot{display:none}.main{padding:18px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.top{align-items:flex-start;flex-direction:column}}@media(max-width:480px){.formgrid{grid-template-columns:1fr}.field.full{grid-column:auto}.stats{gap:8px}.card{padding:13px}.statnum{font-size:25px}}
+</style>
+</head>
+<body>
+<div id="loginView" class="login card">
+  <div class="brand">KUUZ<span>.</span> WORKSPACE</div>
+  <p class="muted">Your personal creative work tracker.</p>
+  <h1>Welcome back.</h1>
+  <p class="muted">Sign in with your email to access your cloud workspace.</p>
+  <div class="field"><label>Email address</label><input id="email" type="email" placeholder="you@example.com" autocomplete="email"></div>
+  <button class="primary" style="width:100%" id="loginBtn">Send sign-in link</button>
+  <div id="loginMsg" class="small muted" style="margin-top:15px">Use the email address registered with your Supabase project.</div>
+</div>
+
+<div id="app" class="layout hidden">
+  <aside class="sidebar">
+    <div class="brand">KUUZ<span>.</span> WORKSPACE</div>
+    <nav class="nav">
+      <button class="active" data-page="dashboard">◫ &nbsp; Dashboard</button>
+      <button data-page="tasks">☷ &nbsp; My Tasks</button>
+      <button data-page="kol">◉ &nbsp; KOL Tracker</button>
+    </nav>
+    <div class="sidefoot small muted">
+      <div class="statusline"><span class="dot"></span><span id="syncStatus">Connecting…</span></div>
+      <p id="userEmail" style="margin-top:12px"></p>
+      <button id="signoutBtn">Sign out</button>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="top">
+      <div><div class="muted small" id="eyebrow">YOUR WORKSPACE / OVERVIEW</div><h1 id="pageTitle">Good work starts here.</h1><div class="muted" id="pageSub">Your projects, deadlines and next moves.</div></div>
+      <div class="actions"><button id="refreshBtn">↻ Refresh</button><button class="primary" id="addTaskBtn">＋ New task</button></div>
+    </header>
+
+    <section id="dashboardPage">
+      <div class="stats">
+        <div class="card"><div class="muted">Total tasks</div><div class="statnum" id="statTotal">0</div><div class="small muted">In your workspace</div></div>
+        <div class="card"><div class="muted">In progress</div><div class="statnum accent" id="statProgress">0</div><div class="small muted">Currently moving</div></div>
+        <div class="card"><div class="muted">Completed</div><div class="statnum" id="statDone">0</div><div class="small muted">Work delivered</div></div>
+        <div class="card"><div class="muted">Overdue</div><div class="statnum" id="statOverdue">0</div><div class="small muted">Past the deadline</div></div>
+      </div>
+      <section class="section card"><div class="sectionhead"><h2>Upcoming & active work</h2><button id="allTasksBtn">View all tasks →</button></div><div id="recentTasks"></div></section>
+      <section class="section card"><div class="sectionhead"><h2>KOL content pipeline</h2><button id="allKolBtn">Open tracker →</button></div><div id="kolSummary"></div></section>
+    </section>
+
+    <section id="tasksPage" class="hidden">
+      <div class="toolbar"><input id="taskSearch" placeholder="Search task, client, project…"><select id="taskStatusFilter" style="max-width:180px"><option value="">All statuses</option><option>To Do</option><option>In Progress</option><option>Review</option><option>Done</option></select></div>
+      <div class="card"><div id="taskTable"></div></div>
+    </section>
+
+    <section id="kolPage" class="hidden">
+      <div class="sectionhead"><div><h2>KOL video tracking</h2><p class="muted small">Submission → client check → revision → publish</p></div><button class="primary" id="addKolBtn">＋ Add KOL video</button></div>
+      <div class="card"><div id="kolTable"></div></div>
+    </section>
+  </main>
+</div>
+
+<div id="modalBack" class="modalback hidden">
+  <div class="modal"><div class="modalhead"><h2 id="modalTitle">New task</h2><button id="closeModal">✕</button></div>
+    <form id="editForm"><div id="formFields" class="formgrid"></div><div class="footeractions"><button type="button" id="cancelModal">Cancel</button><button class="primary" type="submit">Save changes</button></div></form>
+  </div>
+</div>
+
+<script>
+/* Supabase project connection */
+const SUPABASE_URL = "https://apaqmbxvveoveignotil.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "PASTE_YOUR_SB_PUBLISHABLE_KEY_HERE";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+let user = null, tasks = [], kols = [], page = "dashboard", editId = null, editType = "task";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const today = () => new Date().toISOString().slice(0,10);
+function msg(text,error=false){$("loginMsg").textContent=text;$("loginMsg").className=error?"small error":"small muted";}
+function setSync(s){$("syncStatus").textContent=s;}
+function showPage(p){
+  page=p;
+  ["dashboard","tasks","kol"].forEach(x=>$(x+"Page").classList.toggle("hidden",x!==p));
+  document.querySelectorAll("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===p));
+  $("pageTitle").textContent={dashboard:"Good work starts here.",tasks:"My tasks.",kol:"KOL content tracker."}[p];
+  $("pageSub").textContent={dashboard:"Your projects, deadlines and next moves.",tasks:"Keep every deliverable moving.",kol:"Track every video from submission to publishing."}[p];
+  $("eyebrow").textContent="YOUR WORKSPACE / "+p.toUpperCase();
+  $("addTaskBtn").classList.toggle("hidden",p==="kol");
+  render();
+}
+async function signIn(){
+  const email=$("email").value.trim();
+  if(!email){msg("Please enter your email address.",true);return;}
+  $("loginBtn").disabled=true;msg("Sending your sign-in link…");
+  const {error}=await db.auth.signInWithOtp({email,options:{emailRedirectTo:location.href.split("#")[0]}});
+  $("loginBtn").disabled=false;
+  msg(error?error.message:"Check your inbox and click the sign-in link. If needed, check spam.");
+}
+async function start(){
+  const {data:{session}}=await db.auth.getSession();
+  if(session) await enter(session.user);
+  db.auth.onAuthStateChange(async(event,session)=>{
+    if(session?.user && !user) { setTimeout(()=>enter(session.user),0); }
+    if(!session){user=null;$("app").classList.add("hidden");$("loginView").classList.remove("hidden");}
+  });
+}
+async function enter(u){
+  user=u;$("loginView").classList.add("hidden");$("app").classList.remove("hidden");$("userEmail").textContent=u.email||"Signed in";
+  await loadData();
+}
+async function loadData(){
+  setSync("Syncing cloud…");
+  const [t,k]=await Promise.all([
+    db.from("tasks").select("*").order("due",{ascending:true,nullsFirst:false}),
+    db.from("kol_videos").select("*").order("publish_date",{ascending:true,nullsFirst:false})
+  ]);
+  if(t.error||k.error){
+    setSync("Database error");
+    alert("Could not load your cloud data. Check your Supabase tables and security policies.\n"+(t.error?.message||k.error?.message));
+    return;
+  }
+  tasks=t.data||[];kols=k.data||[];setSync("Cloud synced");render();
+}
+async function saveRecord(table,row){
+  setSync("Saving…");
+  const {error}=await db.from(table).upsert({...row,user_id:user.id},{onConflict:"id"});
+  if(error){setSync("Save failed");alert("Could not save to cloud: "+error.message);return false;}
+  setSync("Cloud synced");return true;
+}
+async function deleteRecord(table,id){
+  if(!confirm("Delete this record? This cannot be undone."))return;
+  const {error}=await db.from(table).delete().eq("id",id);
+  if(error){alert(error.message);return;}
+  await loadData();
+}
+function badge(s){
+  const cls=s==="Done"||s==="Published"?"done":s==="High"||s==="Overdue"?"high":"";
+  return `<span class="badge ${cls}">${esc(s||"—")}</span>`;
+}
+function taskRows(list){
+  if(!list.length)return '<div class="empty">No tasks yet. Add your first task to get started.</div>';
+  return `<div class="tablewrap"><table class="table"><thead><tr><th>Task</th><th>Client / Project</th><th>Due</th><th>Priority</th><th>Status</th><th>Actions</th></tr></thead><tbody>${list.map(t=>`<tr><td><strong>${esc(t.name)}</strong><div class="small muted">${esc(t.type||"General")}</div></td><td>${esc(t.client||"—")}<div class="small muted">${esc(t.project||"")}</div></td><td>${esc(t.due||"—")}</td><td>${badge(t.priority)}</td><td>${badge(t.status)}</td><td><button data-edit-task="${esc(t.id)}">Edit</button> <button class="danger" data-delete-task="${esc(t.id)}">Delete</button></td></tr>`).join("")}</tbody></table></div>`;
+}
+function kolRows(list){
+ if(!list.length)return '<div class="empty">No KOL videos yet. Add one to start tracking.</div>';
+ return `<div class="tablewrap"><table class="table"><thead><tr><th>KOL / Video</th><th>Brand</th><th>Submit</th><th>Client check</th><th>Revision</th><th>Publish</th><th>Status</th><th>Actions</th></tr></thead><tbody>${list.map(k=>`<tr><td><strong>${esc(k.name)}</strong><div class="small muted">${esc(k.video)}</div></td><td>${esc(k.brand||"—")}</td><td>${esc(k.submit_date||"—")}</td><td>${esc(k.client_check_date||"—")}</td><td>${esc(k.revision_due_date||"—")}</td><td>${esc(k.publish_date||"—")}</td><td>${badge(k.status)}</td><td><button data-edit-kol="${esc(k.id)}">Edit</button> <button class="danger" data-delete-kol="${esc(k.id)}">Delete</button></td></tr>`).join("")}</tbody></table></div>`;
+}
+function render(){
+ $("statTotal").textContent=tasks.length;
+ $("statProgress").textContent=tasks.filter(t=>t.status==="In Progress").length;
+ $("statDone").textContent=tasks.filter(t=>t.status==="Done").length;
+ $("statOverdue").textContent=tasks.filter(t=>t.due&&t.due<today()&&t.status!=="Done").length;
+ $("recentTasks").innerHTML=taskRows(tasks.filter(t=>t.status!=="Done").slice(0,5));
+ const q=($("taskSearch").value||"").toLowerCase(), st=$("taskStatusFilter").value;
+ $("taskTable").innerHTML=taskRows(tasks.filter(t=>(!st||t.status===st)&&[t.name,t.client,t.project].join(" ").toLowerCase().includes(q)));
+ $("kolTable").innerHTML=kolRows(kols);
+ $("kolSummary").innerHTML=kolRows(kols.slice(0,4));
+}
+function field(name,label,type="text",value="",opts=[]){
+ let control=type==="select"?`<select name="${name}">${opts.map(o=>`<option ${o===value?"selected":""}>${esc(o)}</option>`).join("")}</select>`:`<input name="${name}" type="${type}" value="${esc(value)}" ${type==="date"?"":""}>`;
+ return `<div class="field"><label>${label}</label>${control}</div>`;
+}
+function openEditor(type,record=null){
+ editType=type;editId=record?.id||null;
+ $("modalTitle").textContent=(record?"Edit ":"New ")+(type==="task"?"task":"KOL video");
+ if(type==="task"){
+ $("formFields").innerHTML=field("name","Task name","text",record?.name||"")+
+ field("client","Client / brand","text",record?.client||"")+
+ field("project","Project","text",record?.project||"")+
+ field("due","Deadline","date",record?.due||"")+
+ field("priority","Priority","select",record?.priority||"Medium",["Low","Medium","High","Urgent"])+
+ field("status","Status","select",record?.status||"To Do",["To Do","In Progress","Review","Done"])+
+ field("type","Task type","select",record?.type||"Creative",["Creative","Content","KOL","Meeting","Report","Admin","General"])+
+ '<div class="field full"><label>Notes</label><textarea name="notes" rows="3">'+esc(record?.notes||"")+'</textarea></div>';
+ }else{
+ $("formFields").innerHTML=field("name","KOL name","text",record?.name||"")+
+ field("brand","Brand / client","text",record?.brand||"")+
+ field("video","Video / deliverable","text",record?.video||"")+
+ field("submit_date","Video submission","date",record?.submit_date||"")+
+ field("client_check_date","Client check","date",record?.client_check_date||"")+
+ field("revision_due_date","Revision due","date",record?.revision_due_date||"")+
+ field("publish_date","Publish date","date",record?.publish_date||"")+
+ field("status","Status","select",record?.status||"Not started",["Not started","Waiting for submission","Client checking","Revision","Approved","Published"]);
+ }
+ $("modalBack").classList.remove("hidden");
+}
+async function submitForm(e){
+ e.preventDefault();const data=Object.fromEntries(new FormData(e.target).entries());
+ if(!data.name?.trim()){alert("Please enter a name.");return;}
+ const table=editType==="task"?"tasks":"kol_videos";
+ const old=(editType==="task"?tasks:kols).find(x=>x.id===editId);
+ const row={...(old||{}),...data,id:editId||crypto.randomUUID(),user_id:user.id,updated_at:new Date().toISOString()};
+ if(!editId)row.created_at=new Date().toISOString();
+ if(await saveRecord(table,row)){ $("modalBack").classList.add("hidden");await loadData(); }
+}
+document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
+$("loginBtn").addEventListener("click",signIn);
+$("email").addEventListener("keydown",e=>{if(e.key==="Enter")signIn()});
+$("signoutBtn").addEventListener("click",async()=>{await db.auth.signOut();});
+$("refreshBtn").addEventListener("click",loadData);
+$("addTaskBtn").addEventListener("click",()=>openEditor("task"));
+$("addKolBtn").addEventListener("click",()=>openEditor("kol"));
+$("allTasksBtn").addEventListener("click",()=>showPage("tasks"));
+$("allKolBtn").addEventListener("click",()=>showPage("kol"));
+$("taskSearch").addEventListener("input",render);$("taskStatusFilter").addEventListener("change",render);
+$("closeModal").addEventListener("click",()=>$("modalBack").classList.add("hidden"));
+$("cancelModal").addEventListener("click",()=>$("modalBack").classList.add("hidden"));
+$("editForm").addEventListener("submit",submitForm);
+document.addEventListener("click",e=>{
+ const b=e.target.closest("button");if(!b)return;
+ if(b.dataset.editTask){const r=tasks.find(x=>x.id===b.dataset.editTask);if(r)openEditor("task",r);}
+ if(b.dataset.deleteTask)deleteRecord("tasks",b.dataset.deleteTask);
+ if(b.dataset.editKol){const r=kols.find(x=>x.id===b.dataset.editKol);if(r)openEditor("kol",r);}
+ if(b.dataset.deleteKol)deleteRecord("kol_videos",b.dataset.deleteKol);
+});
+if(SUPABASE_PUBLISHABLE_KEY==="PASTE_YOUR_SB_PUBLISHABLE_KEY_HERE"){
+ $("loginBtn").disabled=true;msg("Setup needed: replace the publishable-key placeholder in this file before deploying.",true);
+}
+start();
+</script>
+</body>
+</html>
