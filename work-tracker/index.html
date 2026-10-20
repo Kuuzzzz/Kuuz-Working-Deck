@@ -171,9 +171,24 @@ function badge(s){
   const cls=s==="Done"||s==="Published"?"done":s==="High"||s==="Overdue"?"high":"";
   return `<span class="badge ${cls}">${esc(s||"—")}</span>`;
 }
+function priorityRank(value){
+ const ranks={Urgent:0,High:1,Medium:2,Low:3};
+ return Object.prototype.hasOwnProperty.call(ranks,value)?ranks[value]:4;
+}
+function sortTasks(list){
+ return [...list].sort((a,b)=>{
+  const aDone=a.status==="Done",bDone=b.status==="Done";
+  if(aDone!==bDone)return aDone?1:-1;
+  const p=priorityRank(a.priority)-priorityRank(b.priority);
+  if(p!==0)return p;
+  const ad=a.due||"9999-12-31",bd=b.due||"9999-12-31";
+  if(ad!==bd)return ad.localeCompare(bd);
+  return String(a.name||"").localeCompare(String(b.name||""));
+ });
+}
 function taskRows(list){
   if(!list.length)return '<div class="empty">No tasks yet. Add your first task to get started.</div>';
-  return `<div class="tablewrap"><table class="table"><thead><tr><th>Task</th><th>Client / Project</th><th>Due</th><th>Priority</th><th>Status</th><th>Actions</th></tr></thead><tbody>${list.map(t=>`<tr><td><strong>${esc(t.name)}</strong><div class="small muted">${esc(t.type||"General")}</div></td><td>${esc(t.client||"—")}<div class="small muted">${esc(t.project||"")}</div></td><td>${esc(t.due||"—")}</td><td>${badge(t.priority)}</td><td>${badge(t.status)}</td><td><button data-edit-task="${esc(t.id)}">Edit</button> <button class="danger" data-delete-task="${esc(t.id)}">Delete</button></td></tr>`).join("")}</tbody></table></div>`;
+  return `<div class="tablewrap"><table class="table"><thead><tr><th>Task</th><th>Client / Project</th><th>Due</th><th>Priority</th><th>Status</th><th>Actions</th></tr></thead><tbody>${sortTasks(list).map(t=>`<tr><td><strong>${esc(t.name)}</strong><div class="small muted">${esc(t.type||"General")}</div></td><td>${esc(t.client||"—")}<div class="small muted">${esc(t.project||"")}</div></td><td>${esc(t.due||"—")}</td><td>${badge(t.priority)}</td><td>${badge(t.status)}</td><td><button data-edit-task="${esc(t.id)}">Edit</button> <button class="danger" data-delete-task="${esc(t.id)}">Delete</button></td></tr>`).join("")}</tbody></table></div>`;
 }
 function kolRows(list){
  if(!list.length)return '<div class="empty">No KOL videos yet. Add one to start tracking.</div>';
@@ -226,7 +241,7 @@ function render(){
  $("statProgress").textContent=tasks.filter(t=>t.status==="In Progress").length;
  $("statDone").textContent=tasks.filter(t=>t.status==="Done").length;
  $("statOverdue").textContent=tasks.filter(t=>t.due&&t.due<today()&&t.status!=="Done").length;
- $("recentTasks").innerHTML=taskRows(tasks.filter(t=>t.status!=="Done").slice(0,5));
+ $("recentTasks").innerHTML=taskRows(sortTasks(tasks.filter(t=>t.status!=="Done")).slice(0,5));
  const q=($("taskSearch").value||"").toLowerCase(), st=$("taskStatusFilter").value;
  $("taskTable").innerHTML=taskRows(tasks.filter(t=>(!st||t.status===st)&&[t.name,t.client,t.project].join(" ").toLowerCase().includes(q)));
  $("kolTable").innerHTML=kolRows(kols);
