@@ -73,9 +73,8 @@
 <script>
 /* Supabase project connection */
 const SUPABASE_URL = "https://apaqmbxvveoveignotil.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "PASTE_YOUR_SB_PUBLISHABLE_KEY_HERE";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_8QzaJLJaSAe6uNBD8iC2og_jqS1FfD8";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-
 let user = null, tasks = [], kols = [], page = "dashboard", editId = null, editType = "task";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
