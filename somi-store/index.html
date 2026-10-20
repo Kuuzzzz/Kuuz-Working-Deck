@@ -24,7 +24,7 @@ html[data-theme=dark]{color-scheme:dark;--bg:#000;--panel:#0d0d0f;--soft:#171719
 .payments-mode #tableDesc{max-width:720px}
 .payments-mode .toolbar{padding:10px 12px;background:var(--soft);border:1px solid var(--line);border-radius:13px}
 .orders-table{min-width:1120px}.status-customer{min-width:150px}.status-owner{min-width:175px}
-.order-segments{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-1px 0 14px;padding:10px;background:var(--soft);border:1px solid var(--line);border-radius:13px}
+.sync-panel .panelhead{align-items:center}.sync-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:99px;font-size:11px;font-weight:800;background:var(--soft);color:var(--muted);white-space:nowrap}.sync-badge.success{background:#e5f5ed;color:#17774e}.sync-badge.error{background:#fff0d9;color:#9c6416}.sync-pin-field{max-width:560px;margin:14px 0}.sync-pin-field input{width:100%;border:1px solid var(--line);border-radius:9px;padding:11px;background:var(--bg);color:var(--text)}.sync-pin-field small{font-size:11px;color:var(--muted)}.sync-actions{display:flex;gap:8px;flex-wrap:wrap}.sync-status{overflow-wrap:anywhere}.sync-status.success{border-color:#72bd96;background:#e9f7ef;color:#216d49}.sync-status.error{border-color:#d8a35e;background:#fff6e8;color:#8a5114}.sync-status.info{background:var(--soft)}html[data-theme=dark] .sync-status.success{background:#173d2d;color:#a1e8c2}html[data-theme=dark] .sync-status.error{background:#413016;color:#f0c47b}@media(max-width:520px){.sync-actions{display:grid;grid-template-columns:1fr}.sync-actions button{width:100%}.sync-badge{font-size:10px}}.order-segments{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-1px 0 14px;padding:10px;background:var(--soft);border:1px solid var(--line);border-radius:13px}
 .order-segment{display:inline-flex;align-items:center;gap:8px;border:1px solid transparent;border-radius:9px;padding:9px 11px;background:transparent;color:var(--muted);font:inherit;font-size:12px;font-weight:750;cursor:pointer;transition:all .15s ease}
 .order-segment span{display:inline-grid;min-width:22px;height:22px;place-items:center;padding:0 5px;border-radius:7px;background:var(--panel);border:1px solid var(--line);font-size:10px}
 .order-segment:hover{color:var(--text);background:var(--panel)}
@@ -170,12 +170,146 @@ table{min-width:760px}
 <main class="main"><header class="top"><div><div class="eyebrow" id="eyebrow">SOMI STORE / OVERVIEW</div><h1 id="pageTitle">Your shop, at a glance ✿</h1><div class="sub" id="pageSub">Keep your customers and orders organized.</div></div><div class="actions"><button class="btn" id="backBtn" type="button" aria-label="Return to previous section">← Back</button><button class="btn" id="themeBtn">☾ Dark mode</button><button class="btn primary" id="quickAdd">＋ Add order</button></div></header>
 <div id="sectionReturnWrap" class="section-return-wrap hidden"><button class="btn section-return" type="button" id="returnDashboardBtn">← Return to Dashboard</button></div><section id="dashboardPage"><div class="cards" id="stats"></div><div class="contentgrid"><section class="panel"><div class="panelhead"><h2>Recent orders</h2><button class="btn" data-go="orders">View all →</button></div><div class="panelbody" id="recentOrders"></div></section><section class="panel"><div class="panelhead"><h2>Shop activity</h2><span class="rose">✧</span></div><div class="panelbody"><div class="activity" id="activity"></div><div class="notice">Tip: update payment and delivery status as an order moves through your shop.</div></div></section></div></section>
 <section id="tablePage" class="hidden"><h2 class="sectiontitle" id="tableTitle">Orders</h2><div class="sectiondesc" id="tableDesc">Manage your shop records.</div><div class="toolbar"><input id="search" class="field search" placeholder="Search customers, orders, phone, product…"><select id="filter" class="field"><option value="">All statuses</option></select><select id="sortDate" class="field" aria-label="Sort orders by date"><option value="date-desc">Newest date first</option><option value="date-near">Nearest date first</option><option value="date-asc">Oldest date first</option></select><button class="btn primary" id="addRecord">＋ Add new</button></div><div id="orderSegments" class="order-segments hidden" role="group" aria-label="Quick order filters"><button type="button" class="order-segment active" data-order-segment="all">All orders <span id="segmentCountAll">0</span></button><button type="button" class="order-segment" data-order-segment="unpaid">Unpaid <span id="segmentCountUnpaid">0</span></button><button type="button" class="order-segment" data-order-segment="deposit">Deposit paid <span id="segmentCountDeposit">0</span></button><button type="button" class="order-segment" data-order-segment="paid">Fully paid <span id="segmentCountPaid">0</span></button><button type="button" class="order-segment" data-order-segment="done">Done <span id="segmentCountDone">0</span></button></div><section class="panel"><div class="tablewrap" id="tableMount"></div></section></section>
-<section id="settingsPage" class="hidden"><h2 class="sectiontitle">Settings</h2><div class="sectiondesc">Personalize the Somi Store workspace.</div><section class="panel"><div class="panelhead"><h2>Appearance & data</h2></div><div class="panelbody"><p>Neutral surfaces, muted-rose accents, and Sakura petals when you tap a menu.</p><button class="btn" id="themeBtn2">Switch theme</button><div class="notice"><strong>Storage note:</strong> Records are stored in this browser. Cloud database and secure login are not connected in this version. Export backups regularly.</div><p><button class="btn" id="exportBtn">Export records (JSON)</button> <button class="btn" id="resetBtn">Reset sample data</button></p></div></section></section>
+<section id="settingsPage" class="hidden"><h2 class="sectiontitle">Settings</h2><div class="sectiondesc">Personalize the Somi Store workspace.</div><section class="panel sync-panel"><div class="panelhead"><div><h2>Sync across devices</h2><div class="meta">One shared store for your laptop and phone</div></div><span id="syncBadge" class="sync-badge">Local only</span></div><div class="panelbody"><p>Connect this browser to the shared Somi Store cloud. Once connected, order changes sync automatically and other devices refresh in about 10 seconds.</p><div class="formfield sync-pin-field"><label for="syncPin">Private sync PIN</label><input id="syncPin" type="password" autocomplete="new-password" minlength="8" maxlength="128" placeholder="Use the same PIN on both devices"><small>Choose a strong PIN of at least 8 characters. Do not share it in chat.</small></div><div class="sync-actions"><button class="btn primary" id="connectSyncBtn" type="button">Connect & sync</button><button class="btn" id="disconnectSyncBtn" type="button">Disconnect this device</button></div><div id="syncStatus" class="notice sync-status" role="status" aria-live="polite">Cloud sync is not connected. Configure the Netlify server PIN first, then connect your laptop before your phone.</div><div class="notice"><strong>First-time setup:</strong> Connect from the device that has your correct orders first. If the shared store is empty, you can upload that device’s records as the starting copy. On your phone, connect using the same PIN to download the shared records.</div></div></section><section class="panel"><div class="panelhead"><h2>Appearance & data</h2></div><div class="panelbody"><p>Neutral surfaces, muted-rose accents, and Sakura petals when you tap a menu.</p><button class="btn" id="themeBtn2">Switch theme</button><div class="notice"><strong>Storage note:</strong> Records are stored in this browser. Cloud database and secure login are not connected in this version. Export backups regularly.</div><p><button class="btn" id="exportBtn">Export records (JSON)</button> <button class="btn" id="resetBtn">Reset sample data</button></p></div></section></section>
 <div class="notice"><strong>Somi Store</strong> · Muted rose, warm white, pure black · Tap any menu for a Sakura burst.</div></main></div><div id="modalRoot"></div><div id="toastRoot" aria-live="polite"></div>
 <script>
 'use strict';const $=id=>document.getElementById(id),KEY='somi-store-v2',THEME='somi-store-theme';
 const demo={customers:[{id:'CUS-1001',name:'Dara Sok',phone:'012 345 678',email:'dara@example.com',address:'Phnom Penh',notes:''},{id:'CUS-1002',name:'Sreyneang Lim',phone:'098 765 432',email:'sreyneang@example.com',address:'Siem Reap',notes:'Returning customer'},{id:'CUS-1003',name:'Kimheang Choung',phone:'081 234 567',email:'kimheang@example.com',address:'Kandal',notes:''}],orders:[{id:'SM-2049',customer:'CUS-1001',product:'Ruffle Dress',qty:1,total:25,payment:'Paid',status:'Processing',delivery:'Courier',tracking:'KH123456789',date:'2026-10-20',notes:'Pink / M'},{id:'SM-2048',customer:'CUS-1002',product:'Hair Clip Set',qty:2,total:6,payment:'Unpaid',status:'Pending',delivery:'Self pickup',tracking:'',date:'2026-10-20',notes:''},{id:'SM-2047',customer:'CUS-1003',product:'Everyday Tote Bag',qty:1,total:18,payment:'Paid',status:'Delivered',delivery:'Courier',tracking:'KH987654321',date:'2026-10-19',notes:''}]};
 function normalizeOrder(o){o.total=Math.max(0,Number(o.total)||0);o.qty=Math.max(1,Number(o.qty)||1);o.unitPrice=o.unitPrice===undefined||o.unitPrice===null||o.unitPrice===''?o.total/o.qty:Math.max(0,Number(o.unitPrice)||0);if(o.deposit===undefined||o.deposit===null||o.deposit==='')o.deposit=o.payment==='Paid'?o.total:(o.payment==='Partial'?o.total/2:0);const p=paymentState(o.total,o.deposit);o.deposit=p.deposit;o.remaining=p.remaining;o.payment=p.payment;const legacy=String(o.status||'Ordered');if(!o.customerStatus)o.customerStatus=({'Ordered':'Order received','Pending':'Order received','Processing':'Preparing','Shipped':'Shipped','In transit':'Shipped','Out for delivery':'Out for delivery','Delivered':'Delivered','Cancelled':'Cancelled'})[legacy]||'Confirmed';if(!o.ownerStatus)o.ownerStatus=({'Ordered':'Need to order stock','Pending':'Not started','Processing':'Preparing / packing','Shipped':'Handed to courier','In transit':'Handed to courier','Out for delivery':'Handed to courier','Delivered':'Completed','Cancelled':'On hold'})[legacy]||'Not started';o.status=o.customerStatus;o.tracking=o.tracking||'';o.color=o.color||'';o.size=o.size||'';o.deliveryDate=o.deliveryDate||'';return o}function loadData(){try{const v=JSON.parse(localStorage.getItem(KEY));if(v&&Array.isArray(v.customers)&&Array.isArray(v.orders)){v.orders.forEach(normalizeOrder);return v}}catch(e){}const fresh=JSON.parse(JSON.stringify(demo));fresh.orders.forEach(normalizeOrder);return fresh}let data=loadData(),page='dashboard',pageHistory=[],toastTimer,orderSegment='all';
+const SYNC_PIN_KEY='somi-store-sync-pin',SYNC_BASELINE_KEY='somi-store-sync-baseline',SYNC_DIRTY_KEY='somi-store-sync-dirty',SYNC_REVISION_KEY='somi-store-sync-revision';
+let cloudSyncBusy=false,cloudWritePending=false,cloudWriteTimer=null,cloudPollTimer=null,cloudLastUpdatedAt=Number(localStorage.getItem(SYNC_REVISION_KEY)||0),cloudApplying=false;
+function setSyncStatus(message,kind='info'){
+  const el=$('syncStatus');if(el){el.textContent=message;el.className='notice sync-status '+kind;}
+  const badgeEl=$('syncBadge');if(badgeEl){badgeEl.textContent=kind==='success'?'Cloud connected':kind==='error'?'Sync issue':localStorage.getItem(SYNC_PIN_KEY)?'Connecting…':'Local only';badgeEl.className='sync-badge '+kind;}
+}
+function localSnapshot(){return localStorage.getItem(KEY)||JSON.stringify(data)}
+function saveCloudBaseline(revision){
+  localStorage.setItem(SYNC_BASELINE_KEY,localSnapshot());
+  localStorage.setItem(SYNC_REVISION_KEY,String(Number(revision)||0));
+  localStorage.removeItem(SYNC_DIRTY_KEY);
+  cloudLastUpdatedAt=Number(revision)||0;
+}
+async function cloudRequest(pin,method='GET',workspace=null){
+  const options={method,cache:'no-store',headers:{'x-somi-pin':pin}};
+  if(method==='PUT'){options.headers['content-type']='application/json';options.body=JSON.stringify({data:workspace});}
+  const response=await fetch('/.netlify/functions/somi-store-sync',options);
+  let body={};try{body=await response.json()}catch{}
+  if(!response.ok)throw new Error(body.error||('Cloud sync failed ('+response.status+').'));
+  return body;
+}
+function backupLocalBeforeCloudReplace(){
+  try{localStorage.setItem('somi-store-backup-before-cloud-'+Date.now(),localSnapshot());}
+  catch(e){toast('Could not create a local backup. Export a JSON backup before replacing local data.');}
+}
+function applyCloudWorkspace(remote){
+  if(!remote||!remote.data||!Array.isArray(remote.data.orders)||!Array.isArray(remote.data.customers))throw new Error('The shared store returned invalid data.');
+  if(localSnapshot()!==JSON.stringify(remote.data))backupLocalBeforeCloudReplace();
+  cloudApplying=true;
+  try{data=remote.data;data.orders.forEach(normalizeOrder);saveData();saveCloudBaseline(remote.updatedAt);render();}
+  finally{cloudApplying=false;}
+}
+function startCloudPolling(){
+  if(cloudPollTimer)clearInterval(cloudPollTimer);
+  cloudPollTimer=setInterval(async()=>{
+    const pin=localStorage.getItem(SYNC_PIN_KEY);
+    if(!pin||cloudSyncBusy||cloudWritePending||localStorage.getItem(SYNC_DIRTY_KEY)==='1')return;
+    cloudSyncBusy=true;
+    try{
+      const remote=await cloudRequest(pin,'GET');
+      if(remote.data&&Number(remote.updatedAt)>cloudLastUpdatedAt){
+        applyCloudWorkspace(remote);
+        setSyncStatus('Synced with your other devices · '+new Date(Number(remote.updatedAt)).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),'success');
+      }
+    }catch(error){setSyncStatus('Cloud connection issue. Your records remain saved in this browser. Open Settings to reconnect.','error');}
+    finally{cloudSyncBusy=false;}
+  },10000);
+}
+async function performCloudWrite(){
+  if(cloudSyncBusy){cloudWriteTimer=setTimeout(performCloudWrite,800);return;}
+  const pin=localStorage.getItem(SYNC_PIN_KEY);
+  if(!pin||cloudApplying){cloudWritePending=false;return;}
+  cloudSyncBusy=true;
+  try{
+    const result=await cloudRequest(pin,'PUT',data);
+    saveCloudBaseline(result.updatedAt);
+    setSyncStatus('All changes synced · '+new Date(Number(result.updatedAt)).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),'success');
+  }catch(error){
+    localStorage.setItem(SYNC_DIRTY_KEY,'1');
+    setSyncStatus('Saved on this device, but cloud sync failed: '+error.message+' Your local records are safe. Reconnect to retry.','error');
+  }finally{cloudSyncBusy=false;cloudWritePending=false;}
+}
+function queueCloudSync(){
+  const pin=localStorage.getItem(SYNC_PIN_KEY);
+  if(!pin||cloudApplying)return;
+  localStorage.setItem(SYNC_DIRTY_KEY,'1');cloudWritePending=true;
+  setSyncStatus('Saving changes to the shared store…','info');
+  if(cloudWriteTimer)clearTimeout(cloudWriteTimer);
+  cloudWriteTimer=setTimeout(performCloudWrite,650);
+}
+async function connectCloudSync(){
+  const pin=String($('syncPin').value||'').trim();
+  if(pin.length<8){setSyncStatus('Please enter your private sync PIN (at least 8 characters).','error');return;}
+  if(cloudSyncBusy){setSyncStatus('Sync is already running. Please wait a moment.','info');return;}
+  const previousPin=localStorage.getItem(SYNC_PIN_KEY);
+  const dirty=localStorage.getItem(SYNC_DIRTY_KEY)==='1';
+  $('connectSyncBtn').disabled=true;cloudSyncBusy=true;
+  setSyncStatus('Checking the shared store…','info');
+  try{
+    const remote=await cloudRequest(pin,'GET');
+    if(!remote.data){
+      const ok=confirm('The shared store is empty. Upload the '+data.orders.length+' orders on THIS device as the starting copy for all devices? Please do this first on the laptop that has your correct/latest orders. Choose Cancel if this device is not the one with the correct records.');
+      if(!ok){setSyncStatus('Not connected. No records were changed. Connect first on the device with your latest orders.','info');return;}
+      localStorage.setItem(SYNC_PIN_KEY,pin);
+      const saved=await cloudRequest(pin,'PUT',data);
+      saveCloudBaseline(saved.updatedAt);
+      $('syncPin').value=pin;
+      setSyncStatus('Connected! This device uploaded '+saved.orderCount+' orders. Connect your phone with the same PIN to load this shared copy.','success');
+    }else if(previousPin&&dirty){
+      const upload=confirm('This device has local changes that were not synced. Press OK to upload this device and replace the shared copy. Press Cancel to download the shared copy instead; a backup of this device will be kept.');
+      localStorage.setItem(SYNC_PIN_KEY,pin);
+      if(upload){
+        const saved=await cloudRequest(pin,'PUT',data);
+        saveCloudBaseline(saved.updatedAt);
+        setSyncStatus('Local changes uploaded to the shared store. Other devices will refresh shortly.','success');
+      }else{
+        applyCloudWorkspace(remote);
+        setSyncStatus('Shared records downloaded. A backup of the previous local records was saved on this device.','success');
+      }
+      $('syncPin').value=pin;
+    }else{
+      const ok=confirm('The shared store already contains '+remote.orderCount+' orders. Download the shared copy to this device? A backup of this browser’s current records will be saved first.');
+      if(!ok){setSyncStatus('Not connected. No records were changed.','info');return;}
+      localStorage.setItem(SYNC_PIN_KEY,pin);
+      applyCloudWorkspace(remote);
+      $('syncPin').value=pin;
+      setSyncStatus('Connected! Downloaded '+remote.orderCount+' shared orders. This device will keep checking for updates.','success');
+    }
+    startCloudPolling();
+  }catch(error){
+    setSyncStatus(error.message+' If Netlify says the PIN is not configured, add SOMI_STORE_PIN under Project configuration → Environment variables (Functions scope) and redeploy.','error');
+  }finally{$('connectSyncBtn').disabled=false;cloudSyncBusy=false;}
+}
+function disconnectCloudSync(){
+  if(!localStorage.getItem(SYNC_PIN_KEY)){setSyncStatus('This device is already in local-only mode.','info');return;}
+  if(!confirm('Disconnect cloud sync on this device? Your browser records will stay here, but further changes will no longer sync until you reconnect.'))return;
+  localStorage.removeItem(SYNC_PIN_KEY);localStorage.removeItem(SYNC_DIRTY_KEY);
+  if(cloudPollTimer)clearInterval(cloudPollTimer);if(cloudWriteTimer)clearTimeout(cloudWriteTimer);
+  cloudPollTimer=null;cloudWriteTimer=null;cloudWritePending=false;$('syncPin').value='';
+  setSyncStatus('Disconnected on this device. Local records are unchanged.','info');
+}
+async function restoreCloudSyncOnLoad(){
+  const pin=localStorage.getItem(SYNC_PIN_KEY);if(!pin)return;
+  $('syncPin').value=pin;
+  if(localStorage.getItem(SYNC_DIRTY_KEY)==='1'){
+    setSyncStatus('This device has unsynced changes. Open Settings and choose Connect & sync to decide which copy to keep.','error');return;
+  }
+  try{
+    const remote=await cloudRequest(pin,'GET');
+    if(remote.data&&Number(remote.updatedAt)>cloudLastUpdatedAt)applyCloudWorkspace(remote);
+    setSyncStatus(remote.data?'Connected · checking for updates every 10 seconds.':'Cloud store is empty. Open Settings to upload this device’s records.','success');
+    startCloudPolling();
+  }catch(error){setSyncStatus('Cloud sync is unavailable. Local records are still saved. Open Settings to reconnect: '+error.message,'error');}
+}
 function saveData(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){toast('Browser storage is full. Export a backup.')}}function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function money(n){return '$'+Number(n||0).toFixed(2)}
 function paymentState(total,deposit){
   const t=Math.max(0,Number(total)||0);
@@ -342,7 +476,7 @@ function recordPayment(id){
 }
 function deleteOrder(id){const o=data.orders.find(x=>x.id===id);if(!o)return;if(!confirm('Delete order '+o.id+' ('+o.product+')? This cannot be undone.'))return;data.orders=data.orders.filter(x=>x.id!==id);save();toast('Order deleted.')}
 function updateOrder(id,k,v){const o=data.orders.find(x=>x.id===id);if(o){if(k==='deposit'){const p=paymentState(o.total,v);o.deposit=p.deposit;o.remaining=p.remaining;o.payment=p.payment}else if(k==='customerStatus'){o.customerStatus=v;o.status=v;if(v==='Delivered'&&!o.deliveryDate)o.deliveryDate=new Date().toISOString().slice(0,10)}else if(k==='ownerStatus'){o.ownerStatus=v}else{o[k]=v}save();toast(k==='deposit'?'Payment updated.':k==='customerStatus'?'Customer status updated.':k==='ownerStatus'?'Owner process updated.':'Order updated.')}}
-function save(){saveData();render();toast('Changes saved in this browser.')}
+function save(){saveData();render();if(!cloudApplying)queueCloudSync();toast(localStorage.getItem(SYNC_PIN_KEY)?'Changes saved. Syncing across devices…':'Changes saved in this browser.')}
 function theme(){const t=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=t;localStorage.setItem(THEME,t);$('themeBtn').textContent=t==='dark'?'☀ Light mode':'☾ Dark mode';$('themeBtn2').textContent=t==='dark'?'Switch to light mode':'Switch to dark mode';toast(t==='dark'?'Dark mode enabled':'Light mode enabled')}
 function applyTheme(){const t=localStorage.getItem(THEME)||'light';document.documentElement.dataset.theme=t;$('themeBtn').textContent=t==='dark'?'☀ Light mode':'☾ Dark mode';$('themeBtn2').textContent=t==='dark'?'Switch to light mode':'Switch to dark mode'}
 $('nav').addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(b){navBurst(b);go(b.dataset.page)}});
@@ -351,7 +485,8 @@ $('tableMount').addEventListener('change',e=>{const x=e.target.closest('[data-up
 $('orderSegments').addEventListener('click',e=>{const b=e.target.closest('[data-order-segment]');if(!b)return;orderSegment=b.dataset.orderSegment;$('filter').value='';if(page!=='orders')go('orders');else drawTable()});
 $('recentOrders').addEventListener('keydown',e=>{const row=e.target.closest('.dashboard-order-link');if(row&&(e.key==='Enter'||e.key===' ')){e.preventDefault();editOrder(row.dataset.id)}});
 $('backBtn').addEventListener('click',()=>{if(pageHistory.length){const prev=pageHistory.pop();go(prev,true)}else if(page!=='dashboard'){go('dashboard',true)}else{toast('You are already at the dashboard.')}});$('returnDashboardBtn').addEventListener('click',()=>go('dashboard'));$('quickAdd').addEventListener('click',addOrder);$('addRecord').addEventListener('click',addOrder);$('search').addEventListener('input',drawTable);$('filter').addEventListener('change',drawTable);$('sortDate').addEventListener('change',drawTable);$('themeBtn').addEventListener('click',theme);$('themeBtn2').addEventListener('click',theme);
+$('connectSyncBtn').addEventListener('click',connectCloudSync);$('disconnectSyncBtn').addEventListener('click',disconnectCloudSync);$('syncPin').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();connectCloudSync()}});
 $('exportBtn').addEventListener('click',()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='somi-store-backup.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Backup exported.')});
 $('resetBtn').addEventListener('click',()=>{if(confirm('Reset this browser to the sample customers and orders? Your current browser records will be replaced.')){data=JSON.parse(JSON.stringify(demo));save()}});
-function render(){drawDash();if(['orders','customers','payments','reports'].includes(page))drawTable()}applyTheme();go('dashboard');
+function render(){drawDash();if(['orders','customers','payments','reports'].includes(page))drawTable()}applyTheme();go('dashboard');restoreCloudSyncOnLoad();
 </script></body></html>
