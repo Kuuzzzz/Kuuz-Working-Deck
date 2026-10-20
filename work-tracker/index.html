@@ -290,7 +290,7 @@ $("cancelModal").addEventListener("click",()=>$("modalBack").classList.add("hidd
 $("editForm").addEventListener("submit",submitForm);
 document.addEventListener("click",e=>{
  const b=e.target.closest("button");if(!b)return;
- if(b.dataset.calendarDate){selectedCalendarDate=b.dataset.calendarDate;const d=new Date(selectedCalendarDate+"T12:00:00");calendarCursor=new Date(d.getFullYear(),d.getMonth(),1);renderCalendar();}
+ if(b.dataset.calendarDate){selectedCalendarDate=b.dataset.calendarDate;const d=new Date(selectedCalendarDate+"T12:00:00");calendarCursor=new Date(d.getFullYear(),d.getMonth(),1);renderCalendar();openEditor("task");const dueInput=document.querySelector('#formFields [name="due"]');if(dueInput)dueInput.value=selectedCalendarDate;}
  if(b.hasAttribute("data-add-task-date")){openEditor("task");const dueInput=document.querySelector('#formFields [name="due"]');if(dueInput)dueInput.value=selectedCalendarDate;}
  if(b.hasAttribute("data-add-kol-date")){openEditor("kol");const submitInput=document.querySelector('#formFields [name="submit_date"]');if(submitInput)submitInput.value=selectedCalendarDate;}
  if(b.dataset.editTask){const r=tasks.find(x=>x.id===b.dataset.editTask);if(r)openEditor("task",r);}
