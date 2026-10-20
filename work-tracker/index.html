@@ -95,7 +95,12 @@ async function signIn(){
   const email=$("email").value.trim();
   if(!email){msg("Please enter your email address.",true);return;}
   $("loginBtn").disabled=true;msg("Sending your sign-in link…");
-  const {error}=await db.auth.signInWithOtp({email,options:{emailRedirectTo:location.href.split("#")[0]}});
+  const {error}=await db.auth.signInWithOtp({
+  email,
+  options: {
+    emailRedirectTo: "https://kuuz-project.vercel.app"
+  }
+});
   $("loginBtn").disabled=false;
   msg(error?error.message:"Check your inbox and click the sign-in link. If needed, check spam.");
 }
