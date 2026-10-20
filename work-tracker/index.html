@@ -78,7 +78,7 @@ const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 let user = null, tasks = [], kols = [], page = "dashboard", editId = null, editType = "task";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const today = () => new Date().toISOString().slice(0,10);
+const today = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
 function msg(text,error=false){$("loginMsg").textContent=text;$("loginMsg").className=error?"small error":"small muted";}
 function setSync(s){$("syncStatus").textContent=s;}
 function showPage(p){
@@ -95,39 +95,53 @@ async function signIn(){
   const email=$("email").value.trim();
   if(!email){msg("Please enter your email address.",true);return;}
   $("loginBtn").disabled=true;msg("Sending your sign-in link…");
-  const {error}=await db.auth.signInWithOtp({
-  email,
-  options: {
-    emailRedirectTo: "https://kuuz-project.vercel.app"
+  try {
+    const {error}=await db.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: "https://kuuz-project.vercel.app" }
+    });
+    msg(error?error.message:"Check your inbox and click the sign-in link. If needed, check spam.",!!error);
+  } catch(error) {
+    msg("Could not send the sign-in link. Check your connection and try again.",true);
+  } finally {
+    $("loginBtn").disabled=false;
   }
-});
-  $("loginBtn").disabled=false;
-  msg(error?error.message:"Check your inbox and click the sign-in link. If needed, check spam.");
 }
 async function start(){
-  const {data:{session}}=await db.auth.getSession();
-  if(session) await enter(session.user);
-  db.auth.onAuthStateChange(async(event,session)=>{
-    if(session?.user && !user) { setTimeout(()=>enter(session.user),0); }
-    if(!session){user=null;$("app").classList.add("hidden");$("loginView").classList.remove("hidden");}
-  });
+  try {
+    const {data:{session},error}=await db.auth.getSession();
+    if(error) throw error;
+    if(session) await enter(session.user);
+    db.auth.onAuthStateChange((event,session)=>{
+      if(session?.user && !user) { setTimeout(()=>enter(session.user),0); }
+      if(!session){user=null;tasks=[];kols=[];$("app").classList.add("hidden");$("loginView").classList.remove("hidden");}
+    });
+  } catch(error) {
+    msg("Could not initialize your session. Refresh the page and try again.",true);
+  }
 }
 async function enter(u){
   user=u;$("loginView").classList.add("hidden");$("app").classList.remove("hidden");$("userEmail").textContent=u.email||"Signed in";
   await loadData();
 }
 async function loadData(){
+  if(!user) return;
   setSync("Syncing cloud…");
-  const [t,k]=await Promise.all([
-    db.from("tasks").select("*").order("due",{ascending:true,nullsFirst:false}),
-    db.from("kol_videos").select("*").order("publish_date",{ascending:true,nullsFirst:false})
-  ]);
-  if(t.error||k.error){
-    setSync("Database error");
-    alert("Could not load your cloud data. Check your Supabase tables and security policies.\n"+(t.error?.message||k.error?.message));
-    return;
+  try {
+    const [t,k]=await Promise.all([
+      db.from("tasks").select("*").order("due",{ascending:true,nullsFirst:false}),
+      db.from("kol_videos").select("*").order("publish_date",{ascending:true,nullsFirst:false})
+    ]);
+    if(t.error||k.error){
+      setSync("Sync failed");
+      alert("Could not load your cloud data. Your existing screen data has been kept. Check Supabase tables and row-level security policies.\n"+(t.error?.message||k.error?.message));
+      return;
+    }
+    tasks=t.data||[];kols=k.data||[];setSync("Cloud synced");render();
+  } catch(error) {
+    setSync("Offline / retry needed");
+    alert("Could not reach the cloud. Check your connection and use Refresh to try again.");
   }
-  tasks=t.data||[];kols=k.data||[];setSync("Cloud synced");render();
 }
 async function saveRecord(table,row){
   setSync("Saving…");
@@ -136,10 +150,14 @@ async function saveRecord(table,row){
   setSync("Cloud synced");return true;
 }
 async function deleteRecord(table,id){
-  if(!confirm("Delete this record? This cannot be undone."))return;
-  const {error}=await db.from(table).delete().eq("id",id);
-  if(error){alert(error.message);return;}
-  await loadData();
+  if(!user || !confirm("Delete this record? This cannot be undone."))return;
+  try {
+    const {error}=await db.from(table).delete().eq("id",id).eq("user_id",user.id);
+    if(error){alert("Could not delete this record: "+error.message);return;}
+    await loadData();
+  } catch(error) {
+    alert("Could not reach the cloud. The record was not confirmed deleted; refresh before trying again.");
+  }
 }
 function badge(s){
   const cls=s==="Done"||s==="Published"?"done":s==="High"||s==="Overdue"?"high":"";
