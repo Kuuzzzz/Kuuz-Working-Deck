@@ -201,7 +201,7 @@ function renderCalendar(){
 function renderAgenda(events=allCalendarEvents()){
  $("agendaTitle").textContent=new Date(selectedCalendarDate+"T12:00:00").toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric",year:"numeric"});
  const list=events.filter(e=>e.date===selectedCalendarDate);
- $("calendarAgenda").innerHTML=list.length?list.map(e=>'<div class="agenda-item"><div><strong>'+esc(e.title)+'</strong><div class="small muted">'+esc(e.detail)+'</div></div>'+badge(e.status)+'</div>').join(""):'<div class="empty">Nothing scheduled for this date.</div>';
+ $("calendarAgenda").innerHTML=(list.length?list.map(e=>'<div class="agenda-item"><div><strong>'+esc(e.title)+'</strong><div class="small muted">'+esc(e.detail)+'</div></div>'+badge(e.status)+'</div>').join(""):'<div class="empty">Nothing scheduled for this date.</div>')+'<div class="actions" style="margin-top:14px"><button class="primary" data-add-task-date>＋ Add task on this date</button><button data-add-kol-date>＋ Add KOL milestone</button></div>';
 }
 function renderReports(){
  const done=tasks.filter(t=>t.status==="Done").length;
@@ -291,6 +291,8 @@ $("editForm").addEventListener("submit",submitForm);
 document.addEventListener("click",e=>{
  const b=e.target.closest("button");if(!b)return;
  if(b.dataset.calendarDate){selectedCalendarDate=b.dataset.calendarDate;const d=new Date(selectedCalendarDate+"T12:00:00");calendarCursor=new Date(d.getFullYear(),d.getMonth(),1);renderCalendar();}
+ if(b.hasAttribute("data-add-task-date")){openEditor("task");const dueInput=document.querySelector('#formFields [name="due"]');if(dueInput)dueInput.value=selectedCalendarDate;}
+ if(b.hasAttribute("data-add-kol-date")){openEditor("kol");const submitInput=document.querySelector('#formFields [name="submit_date"]');if(submitInput)submitInput.value=selectedCalendarDate;}
  if(b.dataset.editTask){const r=tasks.find(x=>x.id===b.dataset.editTask);if(r)openEditor("task",r);}
  if(b.dataset.deleteTask)deleteRecord("tasks",b.dataset.deleteTask);
  if(b.dataset.editKol){const r=kols.find(x=>x.id===b.dataset.editKol);if(r)openEditor("kol",r);}
