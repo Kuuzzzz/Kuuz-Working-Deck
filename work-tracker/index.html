@@ -83,10 +83,10 @@ const SUPABASE_URL = "https://apaqmbxvveoveignotil.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_8QzaJLJaSAe6uNBD8iC2og_jqS1FfD8";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 let user = null, tasks = [], kols = [], page = "dashboard", editId = null, editType = "task";
+let calendarCursor = new Date(new Date().getFullYear(),new Date().getMonth(),1), selectedCalendarDate = today();
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const today = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
-let calendarCursor = new Date(new Date().getFullYear(),new Date().getMonth(),1), selectedCalendarDate = today();
 function msg(text,error=false){$("loginMsg").textContent=text;$("loginMsg").className=error?"small error":"small muted";}
 function setSync(s){$("syncStatus").textContent=s;}
 function showPage(p){
