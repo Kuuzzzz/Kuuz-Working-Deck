@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f4f1eb">
+<meta name="description" content="Upload and preview campaign images in your browser with Kuuz_Portfolio.">
+<title>Image Upload & Preview — Kuuz_Portfolio</title>
+<style>
+:root{--paper:#f4f1eb;--ink:#22221f;--muted:#77756e;--line:#d9d5cc;--accent:#c84f32;--white:#fffdf8;--serif:Georgia,'Times New Roman',serif;--sans:Arial,Helvetica,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}button,input{font:inherit}.wrap{width:min(1050px,calc(100% - 40px));margin:auto}.topbar{height:72px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);font-size:11px;letter-spacing:.08em;text-transform:uppercase}.wordmark{font-weight:800;letter-spacing:-.04em}.wordmark span{color:var(--accent)}.back{color:var(--muted)}.hero{padding:70px 0 35px}.eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);margin:0 0 18px}.hero h1{font:400 clamp(44px,7vw,76px)/.98 var(--serif);letter-spacing:-.065em;margin:0;max-width:760px}.hero h1 em{color:var(--accent);font-weight:400}.lede{font-size:14px;line-height:1.8;color:#66635c;max-width:630px;margin:22px 0 0}.dropzone{margin:12px 0 22px;border:1px dashed #b5aea2;background:rgba(255,253,248,.55);min-height:250px;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;transition:background .2s,border-color .2s}.dropzone.dragover{background:#eee2d5;border-color:var(--accent)}.drop-inner{max-width:500px}.upload-icon{width:54px;height:54px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;margin:0 auto 18px;font-size:24px;color:var(--accent)}.dropzone h2{font:400 27px var(--serif);margin:0 0 10px}.dropzone p{font-size:12px;line-height:1.7;color:var(--muted);margin:0 0 20px}.button{border:1px solid var(--ink);background:var(--ink);color:var(--white);padding:12px 18px;cursor:pointer;font-size:10px;letter-spacing:.09em;text-transform:uppercase}.button.secondary{background:transparent;color:var(--ink)}.button:disabled{opacity:.45;cursor:not-allowed}.tools{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.count{font-size:11px;color:var(--muted)}.actions{display:flex;gap:8px;flex-wrap:wrap}.preview-heading{display:flex;align-items:end;justify-content:space-between;gap:15px;margin:38px 0 18px}.preview-heading h2{font:400 32px var(--serif);letter-spacing:-.04em;margin:0}.preview-heading p{font-size:11px;color:var(--muted);margin:0}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.empty{grid-column:1/-1;border:1px solid var(--line);padding:42px 20px;text-align:center;color:var(--muted);font-size:12px;line-height:1.8}.card{background:var(--white);border:1px solid var(--line);min-width:0}.thumb{aspect-ratio:4/3;background:#e7e1d7;display:grid;place-items:center;overflow:hidden}.thumb img{width:100%;height:100%;object-fit:contain}.card-info{padding:12px}.filename{font-size:11px;line-height:1.5;overflow-wrap:anywhere;margin:0 0 6px}.filesize{font-size:10px;color:var(--muted);margin:0 0 12px}.remove{border:0;background:transparent;padding:0;text-decoration:underline;text-underline-offset:3px;color:var(--accent);font-size:10px;cursor:pointer}.privacy{margin:32px 0 56px;padding:17px 19px;background:#ebe5d9;font-size:11px;line-height:1.8;color:#615d55}.privacy strong{color:var(--ink)}footer{border-top:1px solid var(--line);padding:20px 0 30px;display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}.status{font-size:11px;line-height:1.6;color:#8f3c27;margin-top:12px;min-height:18px}@media(max-width:700px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{padding-top:48px}}@media(max-width:450px){.grid{grid-template-columns:1fr}.thumb{aspect-ratio:16/10}.topbar{height:62px}.dropzone{min-height:220px;padding:20px}.preview-heading{align-items:start;flex-direction:column}}
+</style>
+</head>
+<body>
+<header class="wrap topbar"><a class="wordmark" href="index.html">KUUZ<span>_</span>PORTFOLIO</a><a class="back" href="index.html#work">← Back to portfolio</a></header>
+<main class="wrap">
+<section class="hero"><p class="eyebrow">Portfolio tools / Image preview</p><h1>Bring your work<br><em>into view.</em></h1><p class="lede">Choose campaign key visuals, social posts, photography or other project images from your device. Preview them together before deciding which assets to use in your portfolio.</p></section>
+<section aria-label="Upload images">
+<label class="dropzone" id="dropzone" for="fileInput">
+  <div class="drop-inner"><div class="upload-icon" aria-hidden="true">↑</div><h2>Drop your images here</h2><p>Or select files from your device. JPG, PNG, WebP and GIF · Up to 15 MB per image · Up to 30 images at a time.</p><span class="button">Choose images</span></div>
+</label>
+<input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple hidden>
+<div class="status" id="status" role="status" aria-live="polite"></div>
+<div class="tools"><span class="count" id="count">No images selected</span><div class="actions"><button class="button secondary" id="clearBtn" type="button" disabled>Clear all</button></div></div>
+</section>
+<section aria-label="Image previews"><div class="preview-heading"><h2>Your previews</h2><p>Private to this browser session until you leave this page.</p></div><div class="grid" id="previewGrid"><div class="empty" id="emptyState">Your selected images will appear here.<br>Nothing is uploaded or published to the website.</div></div></section>
+<aside class="privacy"><strong>Good to know:</strong> This is a simple, browser-only preview tool. Your images are not sent to a server, saved to the website, or visible to other visitors. Refreshing or closing the page clears the previews. Only use assets you have permission to use, and avoid selecting confidential or unreleased client work on a public-facing device.</aside>
+</main>
+<footer class="wrap"><span>© 2026 Kuuz_Portfolio</span><span>Simple image preview · No server upload</span></footer>
+<script>
+(() => {
+  const input = document.getElementById('fileInput');
+  const dropzone = document.getElementById('dropzone');
+  const grid = document.getElementById('previewGrid');
+  const count = document.getElementById('count');
+  const clearBtn = document.getElementById('clearBtn');
+  const status = document.getElementById('status');
+  const MAX_SIZE = 15 * 1024 * 1024;
+  const MAX_FILES = 30;
+  const allowed = new Set(['image/jpeg','image/png','image/webp','image/gif']);
+  let items = [];
+  let nextId = 1;
+
+  const formatBytes = bytes => bytes < 1024 * 1024
+    ? Math.max(1, Math.round(bytes / 1024)) + ' KB'
+    : (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+
+  function render() {
+    grid.replaceChildren();
+    if (!items.length) {
+      const empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.innerHTML = 'Your selected images will appear here.<br>Nothing is uploaded or published to the website.';
+      grid.appendChild(empty);
+    }
+    items.forEach(item => {
+      const card = document.createElement('article');
+      card.className = 'card';
+      const thumb = document.createElement('div');
+      thumb.className = 'thumb';
+      const img = document.createElement('img');
+      img.src = item.url;
+      img.alt = item.file.name;
+      img.loading = 'lazy';
+      thumb.appendChild(img);
+      const info = document.createElement('div');
+      info.className = 'card-info';
+      const name = document.createElement('p');
+      name.className = 'filename';
+      name.textContent = item.file.name;
+      const size = document.createElement('p');
+      size.className = 'filesize';
+      size.textContent = formatBytes(item.file.size);
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'remove';
+      remove.textContent = 'Remove image';
+      remove.setAttribute('aria-label', 'Remove ' + item.file.name);
+      remove.addEventListener('click', () => removeItem(item.id));
+      info.append(name, size, remove);
+      card.append(thumb, info);
+      grid.appendChild(card);
+    });
+    count.textContent = items.length ? items.length + ' image' + (items.length === 1 ? '' : 's') + ' selected' : 'No images selected';
+    clearBtn.disabled = items.length === 0;
+  }
+
+  function removeItem(id) {
+    const item = items.find(entry => entry.id === id);
+    if (item) URL.revokeObjectURL(item.url);
+    items = items.filter(entry => entry.id !== id);
+    render();
+  }
+
+  function addFiles(fileList) {
+    const files = Array.from(fileList || []);
+    let added = 0;
+    const errors = [];
+    for (const file of files) {
+      if (items.length >= MAX_FILES) {
+        errors.push('You can preview up to ' + MAX_FILES + ' images at once.');
+        break;
+      }
+      if (!allowed.has(file.type)) {
+        errors.push(file.name + ': unsupported file type.');
+        continue;
+      }
+      if (file.size > MAX_SIZE) {
+        errors.push(file.name + ': larger than 15 MB.');
+        continue;
+      }
+      items.push({id: nextId++, file, url: URL.createObjectURL(file)});
+      added++;
+    }
+    render();
+    status.textContent = [added ? added + ' image' + (added === 1 ? '' : 's') + ' added.' : '', ...errors].filter(Boolean).join(' ');
+    input.value = '';
+  }
+
+  input.addEventListener('change', event => addFiles(event.target.files));
+  clearBtn.addEventListener('click', () => {
+    items.forEach(item => URL.revokeObjectURL(item.url));
+    items = [];
+    status.textContent = 'All previews cleared.';
+    render();
+  });
+  ['dragenter','dragover'].forEach(type => dropzone.addEventListener(type, event => {
+    event.preventDefault();
+    dropzone.classList.add('dragover');
+  }));
+  ['dragleave','drop'].forEach(type => dropzone.addEventListener(type, event => {
+    event.preventDefault();
+    dropzone.classList.remove('dragover');
+  }));
+  dropzone.addEventListener('drop', event => addFiles(event.dataTransfer.files));
+  window.addEventListener('beforeunload', () => items.forEach(item => URL.revokeObjectURL(item.url)));
+  render();
+})();
+</script>
+</body>
+</html>
