@@ -360,16 +360,16 @@ function drawTable(){
       '<div class="payment-metrics"><div class="payment-metric metric-received"><span>Total collected</span><b>'+money(received)+'</b><small>Money received across all orders</small></div><div class="payment-metric metric-outstanding"><span>Still to collect</span><b>'+money(outstanding)+'</b><small>Outstanding customer balances</small></div><div class="payment-metric"><span>Unpaid orders</span><b>'+unpaid+'</b><small>No payment received yet</small></div><div class="payment-metric"><span>Partially paid</span><b>'+partial+'</b><small>Deposit received, balance due</small></div></div>'+
       '<div class="payment-ledger-head"><div><h3>Customer balances</h3><p>Choose Record payment to update the amount received. Remaining balance and payment status update automatically.</p></div><span class="ledger-count">'+matches.length+' orders</span></div>'+
       '<div class="tablewrap payment-table-wrap"><table class="payment-table"><thead><tr><th>Order / item</th><th>Customer</th><th>Order total</th><th>Received</th><th>Remaining</th><th>Payment status</th><th>Action</th></tr></thead><tbody>'+
-      (matches.length?matches.map(o=>{const p=paymentState(o.total,o.deposit),cls=p.payment==='Paid'?'paid':p.payment==='Deposit Paid'?'partial':'unpaid';return '<tr><td><div class="ledger-order"><span class="ledger-order-icon">＄</span><div><b>'+esc(o.id)+'</b><div class="meta">'+esc(o.product)+' × '+Number(o.qty||1)+'</div><div class="meta">'+esc(o.date||'')+'</div></div></div></td><td><b>'+esc(customer(o.customer).name)+'</b><div class="meta">'+esc(customer(o.customer).phone||'')+'</div></td><td><b>'+money(p.total)+'</b><div class="meta">'+Number(o.qty||1)+' × '+money(o.unitPrice??(p.total/Math.max(1,Number(o.qty||1))))+' each</div></td><td><span class="money-received">'+money(p.deposit)+'</span></td><td><b class="'+(p.remaining>0?'money-due':'money-clear')+'">'+money(p.remaining)+'</b></td><td><span class="payment-status payment-status-'+cls+'">'+esc(p.payment)+'</span></td><td><button class="btn primary payment-record-btn" data-action="record-payment" data-id="'+esc(o.id)+'">Record payment</button></td></tr>'}).join(''):'<tr><td colspan="7"><div class="empty">No matching payments. Try changing your search or status filter.</div></td></tr>')+
+      (matches.length?matches.map(o=>{const p=paymentState(o.total,o.deposit),cls=p.payment==='Paid'?'paid':p.payment==='Deposit Paid'?'partial':'unpaid';return '<tr><td><div class="ledger-order"><span class="ledger-order-icon">＄</span><div><b>'+esc(o.id)+'</b><div class="meta">'+esc(o.product)+' × '+Number(o.qty||1)+'</div><div class="meta">'+esc(o.date||'')+'</div></div></div></td><td><b>'+esc(customer(o.customer).name)+'</b><div class="meta">'+esc(customer(o.customer).phone||'')+'</div></td><td><b>'+money(p.total)+'</b><div class="meta">'+Number(o.qty||1)+' item(s)</div></td><td><span class="money-received">'+money(p.deposit)+'</span></td><td><b class="'+(p.remaining>0?'money-due':'money-clear')+'">'+money(p.remaining)+'</b></td><td><span class="payment-status payment-status-'+cls+'">'+esc(p.payment)+'</span></td><td><button class="btn primary payment-record-btn" data-action="record-payment" data-id="'+esc(o.id)+'">Record payment</button></td></tr>'}).join(''):'<tr><td colspan="7"><div class="empty">No matching payments. Try changing your search or status filter.</div></td></tr>')+
       '</tbody></table></div><div class="payment-footnote">Payment status is calculated from the order total and amount received. A deposit can never exceed the order total.</div></div>';
     return;
   }
-  m.innerHTML=matches.length?'<div class="tablewrap" role="region" aria-label="Orders table" tabindex="0"><table class="orders-table"><thead><tr><th>Order</th><th>Customer</th><th>Unit price</th><th>Total</th><th>Deposit</th><th>Remaining</th><th>Payment</th><th>Customer status</th><th>Owner process</th><th>Delivery details</th><th>Actions</th></tr></thead><tbody>'+matches.map(o=>{const p=paymentState(o.total,o.deposit);return '<tr><td><b>'+esc(o.id)+'</b><div class="meta">'+esc(o.date)+'</div><div class="meta">'+esc(o.product)+' × '+Number(o.qty||1)+'</div><div class="meta">'+[o.color,o.size].filter(Boolean).map(esc).join(' · ')+'</div></td><td>'+esc(customer(o.customer).name)+'<div class="meta">'+esc(customer(o.customer).phone)+'</div></td><td>'+money(o.unitPrice??(p.total/Math.max(1,Number(o.qty||1))))+'<div class="meta">per item</div></td><td><b>'+money(p.total)+'</b><div class="meta">'+Number(o.qty||1)+' × unit price</div></td><td>'+money(p.deposit)+'</td><td><b>'+money(p.remaining)+'</b></td><td>'+badge(p.payment)+'</td><td><select class="field status-customer" data-update="customerStatus" data-id="'+esc(o.id)+'" aria-label="Customer order status">'+['Order received','Confirmed','Preparing','Shipped','Out for delivery','Delivered','Cancelled'].map(x=>'<option '+((o.customerStatus||o.status)===x?'selected':'')+'>'+x+'</option>').join('')+'</select></td><td><select class="field status-owner" data-update="ownerStatus" data-id="'+esc(o.id)+'" aria-label="Owner process status">'+['Not started','Need to order stock','Ordered from supplier','Preparing / packing','Ready to ship','Handed to courier','Completed','On hold'].map(x=>'<option '+((o.ownerStatus||'Not started')===x?'selected':'')+'>'+x+'</option>').join('')+'</select></td><td>'+esc(o.delivery)+'<div class="meta">'+(o.deliveryDate?'Delivery date: '+esc(o.deliveryDate):'No delivery date')+'</div><div class="meta">'+(o.tracking?'Tracking: '+esc(o.tracking):'Tracking optional')+'</div></td><td><button class="btn" data-action="edit-order" data-id="'+esc(o.id)+'">Edit</button> <button class="btn danger" data-action="delete-order" data-id="'+esc(o.id)+'">Delete</button></td></tr>'}).join('')+'</tbody></table></div>':'<div class="empty">No matching records. Try a different search or add an order.</div>';
+  m.innerHTML=matches.length?'<div class="tablewrap" role="region" aria-label="Orders table" tabindex="0"><table class="orders-table"><thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Deposit</th><th>Remaining</th><th>Payment</th><th>Customer status</th><th>Owner process</th><th>Delivery details</th><th>Actions</th></tr></thead><tbody>'+matches.map(o=>{const p=paymentState(o.total,o.deposit);return '<tr><td><b>'+esc(o.id)+'</b><div class="meta">'+esc(o.date)+'</div><div class="meta">'+esc(o.product)+' × '+Number(o.qty||1)+'</div><div class="meta">'+[o.color,o.size].filter(Boolean).map(esc).join(' · ')+'</div></td><td>'+esc(customer(o.customer).name)+'<div class="meta">'+esc(customer(o.customer).phone)+'</div></td><td><b>'+money(p.total)+'</b></td><td>'+money(p.deposit)+'</td><td><b>'+money(p.remaining)+'</b></td><td>'+badge(p.payment)+'</td><td><select class="field status-customer" data-update="customerStatus" data-id="'+esc(o.id)+'" aria-label="Customer order status">'+['Order received','Confirmed','Preparing','Shipped','Out for delivery','Delivered','Cancelled'].map(x=>'<option '+((o.customerStatus||o.status)===x?'selected':'')+'>'+x+'</option>').join('')+'</select></td><td><select class="field status-owner" data-update="ownerStatus" data-id="'+esc(o.id)+'" aria-label="Owner process status">'+['Not started','Need to order stock','Ordered from supplier','Preparing / packing','Ready to ship','Handed to courier','Completed','On hold'].map(x=>'<option '+((o.ownerStatus||'Not started')===x?'selected':'')+'>'+x+'</option>').join('')+'</select></td><td>'+esc(o.delivery)+'<div class="meta">'+(o.deliveryDate?'Delivery date: '+esc(o.deliveryDate):'No delivery date')+'</div><div class="meta">'+(o.tracking?'Tracking: '+esc(o.tracking):'Tracking optional')+'</div></td><td><button class="btn" data-action="edit-order" data-id="'+esc(o.id)+'">Edit</button> <button class="btn danger" data-action="delete-order" data-id="'+esc(o.id)+'">Delete</button></td></tr>'}).join('')+'</tbody></table></div>':'<div class="empty">No matching records. Try a different search or add an order.</div>';
 }
 
 function openModal(title,fields,initial,done){
   const hasPayment=fields.some(f=>f.name==='total')&&fields.some(f=>f.name==='deposit');
-  const hasCalculatedTotal=fields.some(f=>f.name==='qty')&&fields.some(f=>f.name==='unitPrice')&&fields.some(f=>f.name==='total');
+  const hasCalculatedTotal=false;
   const escAttr=v=>esc(String(v??''));
   const fieldHtml=fields.map(f=>{
     const label='<label for="fld-'+escAttr(f.name)+'">'+esc(f.label)+'</label>';
@@ -429,8 +429,7 @@ function addOrder(){
     {name:'color',label:'Color',placeholder:'e.g. Black, Rose pink'},
     {name:'size',label:'Size',placeholder:'e.g. S, M, L, XL'},
     {name:'qty',label:'Quantity',type:'number',default:1,min:1,required:true},
-    {name:'unitPrice',label:'Price per item (USD)',type:'number',default:0,min:0,required:true},
-    {name:'total',label:'Order total (quantity × price)',type:'number',default:0,min:0,readonly:true,required:true},
+    {name:'total',label:'Order total (USD)',type:'number',default:0,min:0,required:true},
     {name:'deposit',label:'Deposit received (USD)',type:'number',default:0,min:0,required:true},
     {name:'customerStatus',label:'Customer order status',options:['Order received','Confirmed','Preparing','Shipped','Out for delivery','Delivered','Cancelled'],default:'Order received'},
     {name:'ownerStatus',label:'Owner process status',options:['Not started','Need to order stock','Ordered from supplier','Preparing / packing','Ready to ship','Handed to courier','Completed','On hold'],default:'Not started'},
@@ -439,32 +438,31 @@ function addOrder(){
     {name:'date',label:'Order date',type:'date',default:new Date().toISOString().slice(0,10),required:true},
     {name:'deliveryDate',label:'Delivery date (optional)',type:'date'},
     {name:'notes',label:'Order notes',full:true}
-  ],{qty:1,unitPrice:0,total:0,deposit:0},v=>{
+  ],{qty:1,total:0,deposit:0},v=>{
     v.customer=resolveCustomer(v.customerName,v.customerPhone);delete v.customerName;delete v.customerPhone;
-    v.qty=Math.max(1,Number(v.qty)||1);v.unitPrice=Math.max(0,Number(v.unitPrice)||0);
-    const p=paymentState(v.qty*v.unitPrice,v.deposit);Object.assign(v,p);v.status=v.customerStatus;v.id=nextId('SM-',data.orders);data.orders.unshift(v);save();
+    v.qty=Math.max(1,Number(v.qty)||1);v.total=Math.max(0,Number(v.total)||0);v.unitPrice=v.total/v.qty;
+    const p=paymentState(v.total,v.deposit);Object.assign(v,p);v.status=v.customerStatus;v.id=nextId('SM-',data.orders);data.orders.unshift(v);save();
   });
 }
 
 function editOrder(id){
   const o=data.orders.find(x=>x.id===id);if(!o)return;
-  const qty=Math.max(1,Number(o.qty)||1),unitPrice=o.unitPrice===undefined?Number(o.total||0)/qty:Number(o.unitPrice)||0;
+  const qty=Math.max(1,Number(o.qty)||1);
   openModal('Edit '+o.id,[...customerNameFields(customer(o.customer).name,customer(o.customer).phone),
     {name:'product',label:'Product / item',required:true,full:true},
     {name:'color',label:'Color'},{name:'size',label:'Size'},
     {name:'qty',label:'Quantity',type:'number',min:1,required:true},
-    {name:'unitPrice',label:'Price per item (USD)',type:'number',min:0,required:true},
-    {name:'total',label:'Order total (quantity × price)',type:'number',min:0,readonly:true,required:true},
+    {name:'total',label:'Order total (USD)',type:'number',min:0,required:true},
     {name:'deposit',label:'Deposit received (USD)',type:'number',min:0,required:true},
     {name:'customerStatus',label:'Customer order status',options:['Order received','Confirmed','Preparing','Shipped','Out for delivery','Delivered','Cancelled']},
     {name:'ownerStatus',label:'Owner process status',options:['Not started','Need to order stock','Ordered from supplier','Preparing / packing','Ready to ship','Handed to courier','Completed','On hold']},
     {name:'delivery',label:'Delivery method',options:['Courier','Self delivery','Self pickup']},
     {name:'tracking',label:'Tracking number (optional)'},{name:'date',label:'Order date',type:'date',required:true},
     {name:'deliveryDate',label:'Delivery date (optional)'},{name:'notes',label:'Order notes',full:true}
-  ],{...o,qty,unitPrice,total:qty*unitPrice,deposit:Number(o.deposit||0)},v=>{
+  ],{...o,qty,total:Number(o.total||0),deposit:Number(o.deposit||0)},v=>{
     v.customer=resolveCustomer(v.customerName,v.customerPhone);delete v.customerName;delete v.customerPhone;
-    v.qty=Math.max(1,Number(v.qty)||1);v.unitPrice=Math.max(0,Number(v.unitPrice)||0);
-    const p=paymentState(v.qty*v.unitPrice,v.deposit);Object.assign(o,v,p);o.status=o.customerStatus;save();toast('Order updated.');
+    v.qty=Math.max(1,Number(v.qty)||1);v.total=Math.max(0,Number(v.total)||0);v.unitPrice=v.total/v.qty;
+    const p=paymentState(v.total,v.deposit);Object.assign(o,v,p);o.status=o.customerStatus;save();toast('Order updated.');
   });
 }
 
