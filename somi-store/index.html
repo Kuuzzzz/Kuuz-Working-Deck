@@ -480,7 +480,7 @@ function openModal(title,fields,initial,done){
         return '<option value="'+escAttr(value)+'" '+(String(initial[f.name]??f.default??'')===String(value)?'selected':'')+'>'+esc(label)+'</option>';
       }).join('')+'</select>';
     }else{
-      control='<input id="fld-'+escAttr(f.name)+'" name="'+escAttr(f.name)+'" type="'+escAttr(f.type||'text')+'" value="'+escAttr(initial[f.name]??f.default??'')+'" placeholder="'+escAttr(f.placeholder||'')+'" '+(f.datalist?'list="customer-suggestions"':'')+' '+(f.required?'required':'')+' '+(f.readonly?'readonly':'')+' '+(f.min!==undefined?'min="'+escAttr(f.min)+'"':'')+'>';
+      control='<input id="fld-'+escAttr(f.name)+'" name="'+escAttr(f.name)+'" type="'+escAttr(f.type||'text')+'" value="'+escAttr(initial[f.name]??f.default??'')+'" placeholder="'+escAttr(f.placeholder||'')+'" '+(f.datalist?'list="customer-suggestions"':'')+' '+(f.required?'required':'')+' '+(f.readonly?'readonly':'')+' '+(f.min!==undefined?'min="'+escAttr(f.min)+'"':'')+' '+(f.step!==undefined?'step="'+escAttr(f.step)+'"':(f.type==='number'?'step="0.01"':''))+'>'';
       if(f.datalist)control+='<datalist id="customer-suggestions">'+f.datalist.map(n=>'<option value="'+escAttr(n)+'"></option>').join('')+'</datalist>';
     }
     return '<div class="formfield '+(f.full?'full':'')+'">'+label+control+'</div>';
@@ -527,7 +527,7 @@ function addOrder(){
     {name:'product',label:'Product / item',required:true,full:true},
     {name:'color',label:'Color',placeholder:'e.g. Black, Rose pink'},
     {name:'size',label:'Size',placeholder:'e.g. S, M, L, XL'},
-    {name:'qty',label:'Quantity',type:'number',default:1,min:1,required:true},
+    {name:'qty',label:'Quantity',type:'number',default:1,min:1,step:1,required:true},
     {name:'total',label:'Order total (USD)',type:'number',default:0,min:0,required:true},
     {name:'deposit',label:'Deposit received (USD)',type:'number',default:0,min:0,required:true},
     {name:'customerStatus',label:'Customer order status',options:['Order received','Confirmed','Preparing','Shipped','Out for delivery','Delivered','Cancelled'],default:'Order received'},
@@ -550,7 +550,7 @@ function editOrder(id){
   openModal('Edit '+o.id,[...customerNameFields(customer(o.customer).name,customer(o.customer).phone),
     {name:'product',label:'Product / item',required:true,full:true},
     {name:'color',label:'Color'},{name:'size',label:'Size'},
-    {name:'qty',label:'Quantity',type:'number',min:1,required:true},
+    {name:'qty',label:'Quantity',type:'number',min:1,step:1,required:true},
     {name:'total',label:'Order total (USD)',type:'number',min:0,required:true},
     {name:'deposit',label:'Deposit received (USD)',type:'number',min:0,required:true},
     {name:'customerStatus',label:'Customer order status',options:['Order received','Confirmed','Preparing','Shipped','Out for delivery','Delivered','Cancelled']},
