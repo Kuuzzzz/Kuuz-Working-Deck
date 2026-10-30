@@ -12,10 +12,10 @@ KUUZ OS is a separate personal operating system being developed alongside the ex
 - Optional Supabase email/password authentication and cross-device data sync
 
 ## Hosting and isolation
-- Keep using the existing isolated Vercel preview deployment for this branch; do not change production domains or routing.
+- Target hosting: Netlify Free, using the repository's existing `netlify.toml` configuration. Its current Free plan has a hard monthly credit cap; sites pause at the limit and the Free plan does not automatically recharge.
+- The existing Vercel deployment is retained only as an isolated development preview while Netlify is connected. Vercel Hobby is restricted to non-commercial personal use, so do not assume it is the long-term free host for a work-related product.
 - No Cloudflare migration is required.
-- Hosting plan eligibility and usage limits must be checked before relying on any service as permanently free.
-- The preview may require team access because deployment SSO protection is enabled.
+- Netlify site creation / GitHub connection still requires the account owner to authorize it. Do not enable a paid plan or auto-recharge.
 
 ## Cloud sync setup
 1. Create a separate Supabase project for KUUZ OS.
