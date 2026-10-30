@@ -163,17 +163,116 @@ table{min-width:760px}
   .payment-preview{grid-template-columns:minmax(0,1fr)}
 }
 
+
+/* KUUZ OS visual system — Somi Store workspace */
+:root{
+ color-scheme:dark;
+ --bg:#0b0d12;--panel:#131722;--soft:#191f2c;--text:#f2f4f8;
+ --muted:#8d98aa;--line:#252d3b;--rose:#c3f36b;--rosebg:#20291a;
+ --green:#6bdba5;--amber:#ffbf69;--blue:#8caeff;
+ --shadow:0 8px 26px #0003;
+}
+html[data-theme=light],html[data-theme=dark]{
+ color-scheme:dark;
+ --bg:#0b0d12;--panel:#131722;--soft:#191f2c;--text:#f2f4f8;
+ --muted:#8d98aa;--line:#252d3b;--rose:#c3f36b;--rosebg:#20291a;
+ --green:#6bdba5;--amber:#ffbf69;--blue:#8caeff;
+ --shadow:0 8px 26px #0003;
+}
+body{background:radial-gradient(ellipse at 80% -20%,#1c2940 0,transparent 38%),var(--bg);color:var(--text);font:14px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3,.brand,.num{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.app{max-width:1440px;margin:0 auto;grid-template-columns:245px minmax(0,1fr)}
+.side{background:rgba(11,13,18,.94);border-right:1px solid var(--line);padding:25px 17px;gap:28px}
+.brand{font-size:18px;letter-spacing:.4px;padding:4px 8px;font-weight:850}
+.brand strong{color:var(--rose)}
+.logo{width:38px;height:38px;border-radius:12px;background:#20291a;color:var(--rose);font-size:19px;font-weight:850}
+.sakura-logo{animation:none!important}
+.nav{gap:6px}
+.nav button{border:1px solid transparent;border-radius:11px;color:var(--muted);padding:12px;font-weight:650}
+.nav button.active,.nav button:hover{color:var(--rose);background:#20291a;border-color:#34452a}
+.nav button.menu-bloom{animation:none}
+.sidebottom{background:var(--panel);border-color:var(--line);border-radius:14px;line-height:1.6}
+.sidebottom b{color:var(--rose)}
+.main{padding:32px;max-width:100%;min-width:0}
+.eyebrow{font-size:10px;letter-spacing:2px;color:var(--rose)}
+.top h1{font-size:clamp(26px,4vw,38px);letter-spacing:-1.3px}
+.sub{color:var(--muted)}
+.btn{background:var(--panel);border-color:var(--line);border-radius:11px;color:var(--text);padding:10px 13px}
+.btn:hover{border-color:#64748b}
+.primary{background:var(--rose);border-color:var(--rose);color:#10150a;font-weight:800}
+.cards{gap:12px}
+.stat,.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:none}
+.stat{padding:16px}
+.stat-top{color:var(--muted)}
+.stat-icon{background:#20291a;color:var(--rose);border-radius:11px}
+.num{font-size:27px;font-weight:800;letter-spacing:-.8px}
+.rose{color:var(--rose)}
+.contentgrid{gap:14px}
+.panelhead{padding:17px 19px;border-bottom-color:var(--line)}
+.panelhead h2{font-size:15px;font-weight:750}
+.panelbody{padding:16px 19px}
+.orderrow{border-bottom-color:var(--line)}
+.status{background:#20291a;color:var(--rose);border-radius:8px}
+.status.Delivered,.status.Paid{color:var(--green);background:#173329}
+.status.Pending,.status.Unpaid{color:var(--amber);background:#382b1c}
+.status.Shipped,.status.Processing,.status.Partial,.status.Transit,.status.Out{color:var(--blue);background:#202b42}
+.dot{background:var(--rose);box-shadow:0 0 0 4px #20291a}
+.sectiontitle{font-size:22px}
+.field,.formfield input,.formfield select,.sync-pin-field input{background:#0d1119;color:var(--text);border-color:var(--line);border-radius:10px}
+th{background:var(--soft);color:var(--muted)}
+td,th{border-bottom-color:var(--line)}
+.avatar{background:#20291a;color:var(--rose)}
+.notice{background:var(--soft);border-color:var(--line);color:var(--muted)}
+.notice strong{color:var(--rose)}
+.modal{background:var(--panel);border-color:var(--line);border-radius:18px}
+.modalhead,.modalfoot{border-color:var(--line)}
+.toast{background:var(--rose);color:#10150a;font-weight:750}
+.payment-intro{background:linear-gradient(120deg,#20291a,var(--soft));border-color:var(--line)}
+.payment-intro-icon{background:var(--panel);color:var(--rose)}
+.payment-metric{background:var(--panel);border-color:var(--line);border-radius:14px}
+.payment-status-paid{background:#173329;color:var(--green)}
+.payment-status-unpaid{background:#382b1c;color:var(--amber)}
+.payment-status-partial{background:#20291a;color:var(--rose)}
+.sync-badge.success{background:#173329;color:var(--green)}
+.sync-badge.error{background:#382b1c;color:var(--amber)}
+.sync-status.success{background:#173329;color:var(--green);border-color:#28513e}
+.sync-status.error{background:#382b1c;color:var(--amber);border-color:#6c4d28}
+.order-segment.active{color:var(--rose)}
+.order-segment.active span{background:#20291a;color:var(--rose)}
+#petalField,.floatflower{display:none!important}
+#themeBtn,#themeBtn2{display:none!important}
+@media(max-width:1000px){.app{grid-template-columns:205px minmax(0,1fr)}.main{padding:24px 20px}}
+@media(max-width:680px){
+ .app{grid-template-columns:minmax(0,1fr)}
+ .side{position:sticky;top:0;z-index:20;padding:12px;border-right:0;border-bottom:1px solid var(--line);gap:12px;background:rgba(11,13,18,.97);backdrop-filter:blur(12px)}
+ .brand{font-size:18px}
+ .nav{display:flex;overflow-x:auto;gap:4px}
+ .nav button{white-space:nowrap;padding:9px 11px;font-size:12px}
+ .sidebottom{display:none}
+ .main{padding:20px 14px 30px}
+ .top{align-items:flex-start;flex-direction:column}
+ .top h1{font-size:26px}
+ .actions{width:100%}
+ .actions button{flex:1}
+ .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .stat{padding:12px}
+ .num{font-size:23px}
+ .contentgrid{grid-template-columns:minmax(0,1fr)}
+ .panelhead,.panelbody{padding:14px}
+ .floatflower{display:none}
+}
+
 </style></head>
 <body>
-<div id="petalField" aria-hidden="true"></div><span class="floatflower float1">✿</span><span class="floatflower float2">❀</span><span class="floatflower float3">✿</span>
-<div class="app"><aside class="side"><div class="brand"><span class="logo"><span class="sakura-logo">✿</span></span><span>Somi <strong>Store</strong></span></div>
+<div id="petalField" aria-hidden="true"></div>
+<div class="app"><aside class="side"><div class="brand"><span class="logo"><b>S</b></span><span>Somi <strong>Store</strong></span></div>
 <nav class="nav" id="nav"><button class="active" data-page="dashboard"><span class="navicon">⌂</span>Dashboard</button><button data-page="orders"><span class="navicon">▣</span>Orders</button><button data-page="payments"><span class="navicon">＄</span>Payments</button><button data-page="reports"><span class="navicon">▥</span>Reports</button><button data-page="settings"><span class="navicon">⚙</span>Settings</button></nav>
 <div class="sidebottom"><b>✿ Your shop, at a glance</b>Manage customers, orders, and payments in one calm workspace.</div></aside>
-<main class="main"><header class="top"><div><div class="eyebrow" id="eyebrow">SOMI STORE / OVERVIEW</div><h1 id="pageTitle">Your shop, at a glance ✿</h1><div class="sub" id="pageSub">Keep your customers and orders organized.</div></div><div class="actions"><button class="btn" id="backBtn" type="button" aria-label="Return to previous section">← Back</button><button class="btn" id="themeBtn">☾ Dark mode</button><button class="btn primary" id="quickAdd">＋ Add order</button></div></header>
+<main class="main"><header class="top"><div><div class="eyebrow" id="eyebrow">SOMI STORE / OVERVIEW</div><h1 id="pageTitle">Your shop, at a glance</h1><div class="sub" id="pageSub">Keep your customers and orders organized.</div></div><div class="actions"><button class="btn" id="backBtn" type="button" aria-label="Return to previous section">← Back</button><button class="btn" id="themeBtn">☾ Dark mode</button><button class="btn primary" id="quickAdd">＋ Add order</button></div></header>
 <div id="sectionReturnWrap" class="section-return-wrap hidden"><button class="btn section-return" type="button" id="returnDashboardBtn">← Return to Dashboard</button></div><section id="dashboardPage"><div class="cards" id="stats"></div><div class="contentgrid"><section class="panel"><div class="panelhead"><h2>Recent orders</h2><button class="btn" data-go="orders">View all →</button></div><div class="panelbody" id="recentOrders"></div></section><section class="panel"><div class="panelhead"><h2>Shop activity</h2><span class="rose">✧</span></div><div class="panelbody"><div class="activity" id="activity"></div><div class="notice">Tip: update payment and delivery status as an order moves through your shop.</div></div></section></div></section>
 <section id="tablePage" class="hidden"><h2 class="sectiontitle" id="tableTitle">Orders</h2><div class="sectiondesc" id="tableDesc">Manage your shop records.</div><div class="toolbar"><input id="search" class="field search" placeholder="Search customers, orders, phone, product…"><select id="filter" class="field"><option value="">All statuses</option></select><select id="sortDate" class="field" aria-label="Sort orders by date"><option value="date-desc">Newest date first</option><option value="date-near">Nearest date first</option><option value="date-asc">Oldest date first</option></select><button class="btn primary" id="addRecord">＋ Add new</button></div><div id="orderSegments" class="order-segments hidden" aria-label="Order categories"><div class="order-segment-group"><span class="order-group-title">Orders</span><div class="order-group-options"><button type="button" class="order-segment active" data-order-segment="all">All orders <span id="segmentCountAll">0</span></button><button type="button" class="order-segment" data-order-segment="unpaid">Unpaid <span id="segmentCountUnpaid">0</span></button></div></div><div class="order-segment-group"><span class="order-group-title">Deposits & payments</span><div class="order-group-options"><button type="button" class="order-segment" data-order-segment="deposit">Deposit paid <span id="segmentCountDeposit">0</span></button><button type="button" class="order-segment" data-order-segment="paid">Fully paid <span id="segmentCountPaid">0</span></button></div></div><div class="order-segment-group"><span class="order-group-title">Fulfillment</span><div class="order-group-options"><button type="button" class="order-segment" data-order-segment="done">Done <span id="segmentCountDone">0</span></button></div></div></div><section class="panel"><div class="tablewrap" id="tableMount"></div></section></section>
 <section id="settingsPage" class="hidden"><h2 class="sectiontitle">Settings</h2><div class="sectiondesc">Personalize the Somi Store workspace.</div><section class="panel sync-panel"><div class="panelhead"><div><h2>Sync across devices</h2><div class="meta">One shared store for your laptop and phone</div></div><span id="syncBadge" class="sync-badge">Local only</span></div><div class="panelbody"><p>Connect this browser to the shared Somi Store cloud. Once connected, order changes sync automatically and other devices refresh in about 10 seconds.</p><div class="formfield sync-pin-field"><label for="syncPin">Private sync PIN</label><input id="syncPin" type="password" autocomplete="new-password" minlength="8" maxlength="128" placeholder="Use the same PIN on both devices"><small>Choose a strong PIN of at least 8 characters. Do not share it in chat.</small></div><div class="sync-actions"><button class="btn primary" id="connectSyncBtn" type="button">Connect & sync</button><button class="btn" id="disconnectSyncBtn" type="button">Disconnect this device</button></div><div id="syncStatus" class="notice sync-status" role="status" aria-live="polite">Cloud sync is not connected. Configure the Netlify server PIN first, then connect your laptop before your phone.</div><div class="notice"><strong>First-time setup:</strong> Connect from the device that has your correct orders first. If the shared store is empty, you can upload that device’s records as the starting copy. On your phone, connect using the same PIN to download the shared records.</div></div></section><section class="panel"><div class="panelhead"><h2>Appearance & data</h2></div><div class="panelbody"><p>Neutral surfaces, muted-rose accents, and Sakura petals when you tap a menu.</p><button class="btn" id="themeBtn2">Switch theme</button><div class="notice"><strong>Storage note:</strong> Records are stored in this browser. Cloud database and secure login are not connected in this version. Export backups regularly.</div><p><button class="btn" id="exportBtn">Export records (JSON)</button> <button class="btn" id="resetBtn">Reset sample data</button></p></div></section></section>
-<div class="notice"><strong>Somi Store</strong> · Muted rose, warm white, pure black · Tap any menu for a Sakura burst.</div></main></div><div id="modalRoot"></div><div id="toastRoot" aria-live="polite"></div>
+<div class="notice"><strong>Somi Store</strong> · Shop management workspace · Built with the KUUZ OS interface system.</div></main></div><div id="modalRoot"></div><div id="toastRoot" aria-live="polite"></div>
 <script>
 'use strict';const $=id=>document.getElementById(id),KEY='somi-store-v2',THEME='somi-store-theme';
 const demo={customers:[{id:'CUS-1001',name:'Dara Sok',phone:'012 345 678',email:'dara@example.com',address:'Phnom Penh',notes:''},{id:'CUS-1002',name:'Sreyneang Lim',phone:'098 765 432',email:'sreyneang@example.com',address:'Siem Reap',notes:'Returning customer'},{id:'CUS-1003',name:'Kimheang Choung',phone:'081 234 567',email:'kimheang@example.com',address:'Kandal',notes:''}],orders:[{id:'SM-2049',customer:'CUS-1001',product:'Ruffle Dress',qty:1,total:25,payment:'Paid',status:'Processing',delivery:'Courier',tracking:'KH123456789',date:'2026-10-20',notes:'Pink / M'},{id:'SM-2048',customer:'CUS-1002',product:'Hair Clip Set',qty:2,total:6,payment:'Unpaid',status:'Pending',delivery:'Self pickup',tracking:'',date:'2026-10-20',notes:''},{id:'SM-2047',customer:'CUS-1003',product:'Everyday Tote Bag',qty:1,total:18,payment:'Paid',status:'Delivered',delivery:'Courier',tracking:'KH987654321',date:'2026-10-19',notes:''}]};
@@ -321,8 +420,8 @@ function paymentState(total,deposit){
   return {total:t,deposit:d,remaining,payment};
 }
 function customer(id){return data.customers.find(c=>c.id===id)||{name:'Unknown',phone:''}}function badge(s){return '<span class="status">'+esc(s)+'</span>'}function toast(s){$('toastRoot').innerHTML='<div class="toast">'+esc(s)+'</div>';clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toastRoot').replaceChildren(),2700)}function nextId(prefix,arr){return prefix+(Math.max(1000,...arr.map(x=>Number(String(x.id).split('-').pop())||1000))+1)}
-function sakuraBurst(x,y){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const layer=$('petalField'),marks=['✿','❀','✧','❀','✿','·','❀','✧','✿','❀','✿','·'];marks.forEach((mark,i)=>{const p=document.createElement('span');p.className='petal';p.textContent=mark;p.style.left=x+'px';p.style.top=y+'px';const a=2*Math.PI*i/marks.length+(Math.random()-.5)*.4,d=30+Math.random()*48;p.style.setProperty('--dx',Math.cos(a)*d+'px');p.style.setProperty('--dy',(Math.sin(a)*d-12-Math.random()*20)+'px');p.style.setProperty('--rot',(Math.random()*240-120)+'deg');p.style.setProperty('--dur',(650+Math.random()*350)+'ms');p.style.fontSize=(11+Math.random()*10)+'px';layer.appendChild(p);p.addEventListener('animationend',()=>p.remove(),{once:true})})}
-function navBurst(b){const r=b.getBoundingClientRect();sakuraBurst(r.left+Math.min(r.width*.22,32),r.top+r.height/2);b.classList.remove('menu-bloom');void b.offsetWidth;b.classList.add('menu-bloom');setTimeout(()=>b.classList.remove('menu-bloom'),450)}
+function sakuraBurst(x,y){}
+function navBurst(b){}
 function go(p,fromBack=false){if(p!==page&&!fromBack){pageHistory.push(page);if(pageHistory.length>30)pageHistory.shift()}page=p;document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===p));$('dashboardPage').classList.toggle('hidden',p!=='dashboard');$('tablePage').classList.toggle('hidden',!['orders','payments','reports'].includes(p));$('settingsPage').classList.toggle('hidden',p!=='settings');const c={dashboard:['OVERVIEW','Your shop, at a glance ✿','Keep your customers and orders organized.'],orders:['ORDERS','Order management','Track customer updates and your internal process separately.'],payments:['PAYMENTS','Payment tracking','Track money received and balances still due.'],reports:['REPORTS','Sales reports','Summaries calculated from your saved records.'],settings:['SETTINGS','Workspace settings','Make Somi Store feel like your workspace.']}[p];$('eyebrow').textContent='SOMI STORE / '+c[0];$('pageTitle').textContent=c[1];$('pageSub').textContent=c[2];$('quickAdd').classList.toggle('hidden',p==='settings'||p==='payments');$('sectionReturnWrap').classList.toggle('hidden',p==='dashboard');$('tablePage').classList.toggle('payments-mode',p==='payments');$('orderSegments').classList.toggle('hidden',p!=='orders');$('sortDate').classList.toggle('hidden',p==='reports'||p==='payments');$('addRecord').classList.toggle('hidden',p==='reports'||p==='payments');if(['orders','payments','reports'].includes(p)){$('tableTitle').textContent={orders:'Order management',payments:'Payment ledger',reports:'Sales summary'}[p];$('tableDesc').textContent={orders:'Manage items, quantities, prices, and fulfillment.',payments:'Track money received and balances still to collect.',reports:'Summaries calculated from your saved records.'}[p];$('addRecord').textContent='＋ Add order';$('filter').classList.toggle('hidden',p==='reports');$('search').placeholder=p==='payments'?'Search customer, order ID, or item…':'Search customers, orders, phone, product…';$('search').value='';$('filter').value='';$('sortDate').value='date-desc';fillFilter();drawTable()}drawDash()}
 function fillFilter(){const a=page==='payments'?['Paid','Deposit Paid','Unpaid']:['Order received','Confirmed','Preparing','Shipped','Out for delivery','Delivered','Cancelled'];$('filter').innerHTML='<option value="">'+(page==='payments'?'All payment statuses':'All customer statuses')+'</option>'+a.map(x=>'<option>'+x+'</option>').join('')}
 function drawDash(){const os=data.orders,paid=os.reduce((s,o)=>s+Number(o.deposit||0),0),active=os.filter(o=>!['Delivered','Cancelled'].includes(o.customerStatus||o.status)).length,owed=os.reduce((s,o)=>s+Math.max(0,Number(o.total||0)-Number(o.deposit||0)),0);$('stats').innerHTML=[['Total orders',os.length,'All recorded orders','▣'],['Active delivery',active,'Not yet completed','↗'],['Collected',money(paid),'Deposits + payments received','＄'],['Remaining',money(owed),'Still owed by customers','◷']].map((s,i)=>'<div class="stat"><div class="stat-top"><span>'+s[0]+'</span><span class="stat-icon">'+s[3]+'</span></div><div class="num '+(i===2?'rose':'')+'">'+s[1]+'</div><div class="small">'+s[2]+'</div></div>').join('');$('recentOrders').innerHTML=os.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,5).map(o=>'<div class="orderrow dashboard-order-link" role="button" tabindex="0" data-action="edit-order" data-id="'+esc(o.id)+'" aria-label="Open order '+esc(o.id)+' for '+esc(customer(o.customer).name)+'"><div><div class="ordername">'+esc(o.product)+'</div><div class="meta">'+esc(o.id)+' · '+esc(customer(o.customer).name)+' · '+money(o.total)+'</div><div class="meta">'+esc(o.delivery)+(o.tracking?' · '+esc(o.tracking):'')+'</div></div><div>'+badge(o.customerStatus||o.status)+'<div class="meta">Owner: '+esc(o.ownerStatus||'Not started')+'</div><div class="meta">'+esc(o.date)+'</div></div></div>').join('')||'<div class="empty">No orders yet. Add your first order.</div>';$('activity').innerHTML=[['New orders',os.filter(o=>(o.customerStatus||o.status)==='Order received').length+' awaiting confirmation'],['Awaiting payment',os.filter(o=>Number(o.remaining)>0).length+' orders with a balance']].map(a=>'<div class="activityitem"><span class="dot"></span><div><b>'+a[0]+'</b><div class="meta">'+a[1]+'</div></div></div>').join('')}
@@ -480,7 +579,7 @@ function deleteOrder(id){const o=data.orders.find(x=>x.id===id);if(!o)return;if(
 function updateOrder(id,k,v){const o=data.orders.find(x=>x.id===id);if(o){if(k==='deposit'){const p=paymentState(o.total,v);o.deposit=p.deposit;o.remaining=p.remaining;o.payment=p.payment}else if(k==='customerStatus'){o.customerStatus=v;o.status=v;if(v==='Delivered'&&!o.deliveryDate)o.deliveryDate=new Date().toISOString().slice(0,10)}else if(k==='ownerStatus'){o.ownerStatus=v}else{o[k]=v}save();toast(k==='deposit'?'Payment updated.':k==='customerStatus'?'Customer status updated.':k==='ownerStatus'?'Owner process updated.':'Order updated.')}}
 function save(){saveData();render();if(!cloudApplying)queueCloudSync();toast(localStorage.getItem(SYNC_PIN_KEY)?'Changes saved. Syncing across devices…':'Changes saved in this browser.')}
 function theme(){const t=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=t;localStorage.setItem(THEME,t);$('themeBtn').textContent=t==='dark'?'☀ Light mode':'☾ Dark mode';$('themeBtn2').textContent=t==='dark'?'Switch to light mode':'Switch to dark mode';toast(t==='dark'?'Dark mode enabled':'Light mode enabled')}
-function applyTheme(){const t=localStorage.getItem(THEME)||'light';document.documentElement.dataset.theme=t;$('themeBtn').textContent=t==='dark'?'☀ Light mode':'☾ Dark mode';$('themeBtn2').textContent=t==='dark'?'Switch to light mode':'Switch to dark mode'}
+function applyTheme(){const t=localStorage.getItem(THEME)||'dark';document.documentElement.dataset.theme=t;$('themeBtn').textContent=t==='dark'?'☀ Light mode':'☾ Dark mode';$('themeBtn2').textContent=t==='dark'?'Switch to light mode':'Switch to dark mode'}
 $('nav').addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(b){navBurst(b);go(b.dataset.page)}});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){const r=b.getBoundingClientRect();sakuraBurst(r.left+r.width/2,r.top+r.height/2);go(b.dataset.go)}const a=e.target.closest('[data-action]');if(a){const id=a.dataset.id;if(a.dataset.action==='edit-order')editOrder(id);if(a.dataset.action==='delete-order')deleteOrder(id);if(a.dataset.action==='record-payment')recordPayment(id)}});
 $('tableMount').addEventListener('change',e=>{const x=e.target.closest('[data-update]');if(x)updateOrder(x.dataset.id,x.dataset.update,x.value)});
