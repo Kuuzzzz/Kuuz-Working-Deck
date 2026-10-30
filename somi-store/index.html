@@ -167,29 +167,29 @@ table{min-width:760px}
 /* KUUZ OS visual system — Somi Store workspace */
 :root{
  color-scheme:dark;
- --bg:#0b0d12;--panel:#131722;--soft:#191f2c;--text:#f2f4f8;
- --muted:#8d98aa;--line:#252d3b;--rose:#c3f36b;--rosebg:#20291a;
- --green:#6bdba5;--amber:#ffbf69;--blue:#8caeff;
- --shadow:0 8px 26px #0003;
+ --bg:#100b11;--panel:#1b131d;--soft:#261a29;--text:#fff2f7;
+ --muted:#b6a1ae;--line:#3a2938;--rose:#ff82ad;--rosebg:#3a1d2b;
+ --green:#80dfb5;--amber:#ffc477;--blue:#b9a2ff;
+ --shadow:0 10px 32px #09030b66;
 }
 html[data-theme=light],html[data-theme=dark]{
  color-scheme:dark;
- --bg:#0b0d12;--panel:#131722;--soft:#191f2c;--text:#f2f4f8;
- --muted:#8d98aa;--line:#252d3b;--rose:#c3f36b;--rosebg:#20291a;
- --green:#6bdba5;--amber:#ffbf69;--blue:#8caeff;
- --shadow:0 8px 26px #0003;
+ --bg:#100b11;--panel:#1b131d;--soft:#261a29;--text:#fff2f7;
+ --muted:#b6a1ae;--line:#3a2938;--rose:#ff82ad;--rosebg:#3a1d2b;
+ --green:#80dfb5;--amber:#ffc477;--blue:#b9a2ff;
+ --shadow:0 10px 32px #09030b66;
 }
-body{background:radial-gradient(ellipse at 80% -20%,#1c2940 0,transparent 38%),var(--bg);color:var(--text);font:14px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+body{background:radial-gradient(ellipse at 82% -18%,#54243b 0,transparent 36%),radial-gradient(ellipse at 5% 30%,#2b1830 0,transparent 32%),var(--bg);color:var(--text);font:14px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
 h1,h2,h3,.brand,.num{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
 .app{max-width:1440px;margin:0 auto;grid-template-columns:245px minmax(0,1fr)}
-.side{background:rgba(11,13,18,.94);border-right:1px solid var(--line);padding:25px 17px;gap:28px}
+.side{background:rgba(20,12,21,.94);border-right:1px solid var(--line);padding:25px 17px;gap:28px}
 .brand{font-size:18px;letter-spacing:.4px;padding:4px 8px;font-weight:850}
 .brand strong{color:var(--rose)}
-.logo{width:38px;height:38px;border-radius:12px;background:#20291a;color:var(--rose);font-size:19px;font-weight:850}
-.sakura-logo{animation:none!important}
+.logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,#ffb3ce,#f45d98 60%,#b94378);color:#fff;font-size:21px;font-weight:900;box-shadow:0 5px 18px #ff5c9b55;animation:somiLogoFloat 3s ease-in-out infinite;position:relative;isolation:isolate}@keyframes somiLogoFloat{0%,100%{transform:translateY(0) rotate(-4deg);box-shadow:0 5px 18px #ff5c9b44}50%{transform:translateY(-5px) rotate(5deg);box-shadow:0 9px 24px #ff5c9b77}}@keyframes somiLogoSparkle{0%,100%{transform:scale(.7) rotate(0);opacity:.65}50%{transform:scale(1.2) rotate(35deg);opacity:1}}@keyframes somiLogoPop{0%,100%{transform:scale(1) rotate(0)}45%{transform:scale(1.16) rotate(-10deg)}75%{transform:scale(1.08) rotate(8deg)}}@media(prefers-reduced-motion:reduce){.logo,.logo:after{animation:none!important}}
+.logo:after{content:'✦';position:absolute;right:-5px;top:-7px;font-size:12px;color:#ffd7e7;text-shadow:0 0 10px #ff82ad;animation:somiLogoSparkle 2.2s ease-in-out infinite}.brand:hover .logo{animation:somiLogoPop .55s ease-in-out}.sakura-logo{animation:none!important}
 .nav{gap:6px}
 .nav button{border:1px solid transparent;border-radius:11px;color:var(--muted);padding:12px;font-weight:650}
-.nav button.active,.nav button:hover{color:var(--rose);background:#20291a;border-color:#34452a}
+.nav button.active,.nav button:hover{color:var(--rose);background:#3a1d2b;border-color:#74405a}
 .nav button.menu-bloom{animation:none}
 .sidebottom{background:var(--panel);border-color:var(--line);border-radius:14px;line-height:1.6}
 .sidebottom b{color:var(--rose)}
@@ -199,12 +199,12 @@ h1,h2,h3,.brand,.num{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Se
 .sub{color:var(--muted)}
 .btn{background:var(--panel);border-color:var(--line);border-radius:11px;color:var(--text);padding:10px 13px}
 .btn:hover{border-color:#64748b}
-.primary{background:var(--rose);border-color:var(--rose);color:#10150a;font-weight:800}
+.primary{background:linear-gradient(135deg,#ff9fc1,#f45d98);border-color:#ff82ad;color:#351322;font-weight:850;box-shadow:0 5px 16px #f45d9830}
 .cards{gap:12px}
 .stat,.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:none}
 .stat{padding:16px}
 .stat-top{color:var(--muted)}
-.stat-icon{background:#20291a;color:var(--rose);border-radius:11px}
+.stat-icon{background:#3a1d2b;color:var(--rose);border-radius:11px}
 .num{font-size:27px;font-weight:800;letter-spacing:-.8px}
 .rose{color:var(--rose)}
 .contentgrid{gap:14px}
@@ -212,39 +212,39 @@ h1,h2,h3,.brand,.num{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Se
 .panelhead h2{font-size:15px;font-weight:750}
 .panelbody{padding:16px 19px}
 .orderrow{border-bottom-color:var(--line)}
-.status{background:#20291a;color:var(--rose);border-radius:8px}
+.status{background:#3a1d2b;color:var(--rose);border-radius:8px}
 .status.Delivered,.status.Paid{color:var(--green);background:#173329}
 .status.Pending,.status.Unpaid{color:var(--amber);background:#382b1c}
 .status.Shipped,.status.Processing,.status.Partial,.status.Transit,.status.Out{color:var(--blue);background:#202b42}
-.dot{background:var(--rose);box-shadow:0 0 0 4px #20291a}
+.dot{background:var(--rose);box-shadow:0 0 0 4px #3a1d2b}
 .sectiontitle{font-size:22px}
 .field,.formfield input,.formfield select,.sync-pin-field input{background:#0d1119;color:var(--text);border-color:var(--line);border-radius:10px}
 th{background:var(--soft);color:var(--muted)}
 td,th{border-bottom-color:var(--line)}
-.avatar{background:#20291a;color:var(--rose)}
+.avatar{background:#3a1d2b;color:var(--rose)}
 .notice{background:var(--soft);border-color:var(--line);color:var(--muted)}
 .notice strong{color:var(--rose)}
 .modal{background:var(--panel);border-color:var(--line);border-radius:18px}
 .modalhead,.modalfoot{border-color:var(--line)}
 .toast{background:var(--rose);color:#10150a;font-weight:750}
-.payment-intro{background:linear-gradient(120deg,#20291a,var(--soft));border-color:var(--line)}
+.payment-intro{background:linear-gradient(120deg,#51263d,var(--soft));border-color:var(--line)}
 .payment-intro-icon{background:var(--panel);color:var(--rose)}
 .payment-metric{background:var(--panel);border-color:var(--line);border-radius:14px}
 .payment-status-paid{background:#173329;color:var(--green)}
 .payment-status-unpaid{background:#382b1c;color:var(--amber)}
-.payment-status-partial{background:#20291a;color:var(--rose)}
+.payment-status-partial{background:#3a1d2b;color:var(--rose)}
 .sync-badge.success{background:#173329;color:var(--green)}
 .sync-badge.error{background:#382b1c;color:var(--amber)}
 .sync-status.success{background:#173329;color:var(--green);border-color:#28513e}
 .sync-status.error{background:#382b1c;color:var(--amber);border-color:#6c4d28}
 .order-segment.active{color:var(--rose)}
-.order-segment.active span{background:#20291a;color:var(--rose)}
+.order-segment.active span{background:#3a1d2b;color:var(--rose)}
 #petalField,.floatflower{display:none!important}
 #themeBtn,#themeBtn2{display:none!important}
 @media(max-width:1000px){.app{grid-template-columns:205px minmax(0,1fr)}.main{padding:24px 20px}}
 @media(max-width:680px){
  .app{grid-template-columns:minmax(0,1fr)}
- .side{position:sticky;top:0;z-index:20;padding:12px;border-right:0;border-bottom:1px solid var(--line);gap:12px;background:rgba(11,13,18,.97);backdrop-filter:blur(12px)}
+ .side{position:sticky;top:0;z-index:20;padding:12px;border-right:0;border-bottom:1px solid var(--line);gap:12px;background:rgba(20,12,21,.97);backdrop-filter:blur(12px)}
  .brand{font-size:18px}
  .nav{display:flex;overflow-x:auto;gap:4px}
  .nav button{white-space:nowrap;padding:9px 11px;font-size:12px}
