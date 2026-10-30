@@ -27,12 +27,12 @@ export default async function handler(request) {
     return jsonResponse({ error: "Method not allowed." }, 405);
   }
 
-  // Stable fallback PIN keeps device sync working even if Netlify's masked
-  // environment variable was saved incorrectly. The environment PIN remains
-  // accepted too, so the owner can rotate it later in Netlify.
-  const fallbackPin = "SomiStoreCloud2026KuuzSync";
+  // Require a private deployment secret. Never ship a fallback PIN in source.
   const configuredPin = process.env.SOMI_STORE_PIN || "";
-  const acceptedPins = [fallbackPin, configuredPin].filter(Boolean);
+  if (configuredPin.length < 16) {
+    return jsonResponse({ error: "Cloud sync is not configured. Set a private SOMI_STORE_PIN (at least 16 characters) in Netlify environment variables, then redeploy." }, 503);
+  }
+  const acceptedPins = [configuredPin];
 
   const origin = request.headers.get("origin");
   const siteUrl = process.env.URL;
