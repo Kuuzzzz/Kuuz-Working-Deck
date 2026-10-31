@@ -194,7 +194,7 @@ function saveCloudBaseline(revision){
 async function cloudRequest(pin,method='GET',workspace=null){
   const options={method,cache:'no-store',headers:{'x-somi-pin':pin}};
   if(method==='PUT'){options.headers['content-type']='application/json';options.body=JSON.stringify({data:workspace});}
-  const response=await fetch('/api/workspace',options);
+  const response=await fetch('https://kuuz-somi-store-dev.vengchhan2302.workers.dev/api/workspace',options);
   let body={};try{body=await response.json()}catch{}
   if(!response.ok)throw new Error(body.error||('Cloud sync failed ('+response.status+').'));
   return body;
