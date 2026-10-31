@@ -62,6 +62,17 @@ async function readWorkspace(env) {
   };
   return { data, updatedAt: Number.isFinite(changed) && changed > 0 ? changed : 0, customerCount:data.customers.length, orderCount:orders.length };
 }
+const ALLOWED_WEB_ORIGINS = new Set([
+  "https://somi-store-preview.vercel.app",
+  "https://somi-store.vercel.app",
+  "https://kuuz-somi-store-dev.vengchhan2302.workers.dev"
+]);
+function apiJson(request, data, status = 200) {
+  const origin = request.headers.get("Origin") || "";
+  const headers = { ...JSON_HEADERS, "access-control-allow-methods": "GET, PUT, OPTIONS", "access-control-allow-headers": "content-type, x-somi-pin", "vary": "Origin" };
+  if (ALLOWED_WEB_ORIGINS.has(origin)) headers["access-control-allow-origin"] = origin;
+  return new Response(JSON.stringify(data), { status, headers });
+}
 async function writeWorkspace(env, data) {
   if (!data || !Array.isArray(data.customers) || !Array.isArray(data.orders)) throw new Error("Workspace must contain customers and orders arrays.");
   if (data.customers.length > 5000 || data.orders.length > 10000) throw new Error("Workspace is larger than the allowed sync limit.");
@@ -155,15 +166,16 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === "/health" && request.method === "GET") return json({ok:true,service:"somi-store-assistant",mode:"development"});
+    if (url.pathname === "/api/workspace" && request.method === "OPTIONS") return apiJson(request, { ok: true });
     if (url.pathname === "/api/workspace" && (request.method === "GET" || request.method === "PUT")) {
       const supplied = request.headers.get("x-somi-pin") || "";
-      if (!env.TELEGRAM_WEBHOOK_SECRET || supplied !== env.TELEGRAM_WEBHOOK_SECRET) return json({error:"Incorrect shared access PIN. Use the existing TELEGRAM_WEBHOOK_SECRET."},401);
+      if (!env.TELEGRAM_WEBHOOK_SECRET || supplied !== env.TELEGRAM_WEBHOOK_SECRET) return apiJson(request, {error:"Incorrect shared access PIN. Use the existing TELEGRAM_WEBHOOK_SECRET."},401);
       try {
-        if (request.method === "GET") { const workspace = await readWorkspace(env); if (workspace.customerCount === 0 && workspace.orderCount === 0) return json({ data: null, updatedAt: 0, customerCount: 0, orderCount: 0 }); return json(workspace); }
+        if (request.method === "GET") { const workspace = await readWorkspace(env); if (workspace.customerCount === 0 && workspace.orderCount === 0) return apiJson(request, { data: null, updatedAt: 0, customerCount: 0, orderCount: 0 }); return apiJson(request, workspace); }
         const body = await request.json();
         const result = await writeWorkspace(env, body?.data);
-        return json({ok:true,updatedAt:result.updatedAt || Date.now(),customerCount:result.customerCount,orderCount:result.orderCount});
-      } catch(error) { console.error("Workspace API error:",error?.message||"unknown"); return json({error:error?.message||"Workspace request failed"},400); }
+        return apiJson(request, {ok:true,updatedAt:result.updatedAt || Date.now(),customerCount:result.customerCount,orderCount:result.orderCount});
+      } catch(error) { console.error("Workspace API error:",error?.message||"unknown"); return apiJson(request, {error:error?.message||"Workspace request failed"},400); }
     }
     if (url.pathname === "/connect-telegram" && request.method === "GET") return new Response(connectPage,{headers:{"content-type":"text/html; charset=utf-8","cache-control":"no-store"}});
     if (url.pathname === "/setup-webhook" && request.method === "POST") {
