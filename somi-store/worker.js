@@ -213,7 +213,7 @@ async function processFlowText(env,chat,id,input) {
     await clearFlow(env,id);await sendMessage(env,chat,"✅ Payment recorded!\nReceived: "+d.amount+"\nRemaining: "+(d.remaining-d.amount),{reply_markup:homeKeyboard()});return true;
   }
   if(f.state==="delivery_tracking"){
-    await env.DB.prepare("UPDATE orders SET tracking_number=?,updated_at=CURRENT_TIMESTAMP WHERE id=?").bind(input==="-"?"":input,d.orderId).run();
+    await env.DB.prepare("UPDATE orders SET tracking_number=?,status=?,customer_status=?,updated_at=CURRENT_TIMESTAMP WHERE id=?").bind(input==="-"?"":input,d.status,d.status,d.orderId).run();
     await env.DB.prepare("INSERT INTO deliveries (id,order_id,delivery_status,delivery_method,tracking_number,delivery_date,notes) VALUES (?,?,?,?,?,?,?)").bind("DEL-"+Date.now(),d.orderId,d.status,"",input==="-"?"":input,"","Updated in Telegram").run();
     await clearFlow(env,id);await sendMessage(env,chat,"✅ Delivery updated!\nStatus: "+d.status+"\nTracking: "+(input==="-"?"—":input),{reply_markup:homeKeyboard()});return true;
   }
