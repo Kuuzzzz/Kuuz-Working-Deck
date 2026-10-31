@@ -27,12 +27,17 @@ function safeNumber(value, fallback = 0) {
 function workspaceDate(value) {
   return value || new Date().toISOString().slice(0, 10);
 }
+async function ensureInventoryTable(env) {
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS inventory_products (id TEXT PRIMARY KEY, sku TEXT NOT NULL UNIQUE, name TEXT NOT NULL, category TEXT, color TEXT, size TEXT, cost_price REAL NOT NULL DEFAULT 0, selling_price REAL NOT NULL DEFAULT 0, stock_qty INTEGER NOT NULL DEFAULT 0, low_stock_level INTEGER NOT NULL DEFAULT 3, image_url TEXT, notes TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)").run();
+}
 async function readWorkspace(env) {
-  const [customers, orderRows, paymentRows, deliveryRows, revision] = await Promise.all([
+  await ensureInventoryTable(env);
+  const [customers, orderRows, paymentRows, deliveryRows, products, revision] = await Promise.all([
     env.DB.prepare("SELECT id, name, phone, email, address, notes FROM customers ORDER BY created_at, id").all(),
     env.DB.prepare("SELECT id, customer_id, product, qty, unit_price, total, status, customer_status, owner_status, delivery_method, tracking_number, color, size, delivery_date, notes, created_at FROM orders ORDER BY created_at, id").all(),
     env.DB.prepare("SELECT order_id, COALESCE(SUM(amount), 0) AS amount FROM payments GROUP BY order_id").all(),
     env.DB.prepare("SELECT d.order_id, d.delivery_status, d.delivery_method, d.tracking_number, d.delivery_date, d.notes FROM deliveries d INNER JOIN (SELECT order_id, MAX(created_at) AS latest FROM deliveries GROUP BY order_id) x ON x.order_id=d.order_id AND x.latest=d.created_at").all(),
+    env.DB.prepare("SELECT id,sku,name,category,color,size,cost_price,selling_price,stock_qty,low_stock_level,image_url,notes FROM inventory_products ORDER BY name,color,size").all(),
     env.DB.prepare("SELECT MAX(ts) AS changed FROM (SELECT updated_at AS ts FROM customers UNION ALL SELECT updated_at FROM orders UNION ALL SELECT created_at FROM payments UNION ALL SELECT updated_at FROM deliveries)").first()
   ]);
   const paidByOrder = new Map((paymentRows.results || []).map(x => [String(x.order_id), safeNumber(x.amount)]));
@@ -58,6 +63,7 @@ async function readWorkspace(env) {
   const changed = revision?.changed ? Date.parse(revision.changed.replace(" ", "T") + (revision.changed.includes("Z") ? "" : "Z")) : 0;
   const data = {
     customers: (customers.results || []).map(c => ({ id:c.id, name:c.name, phone:c.phone || "", email:c.email || "", address:c.address || "", notes:c.notes || "" })),
+    products: (products.results || []).map(p => ({id:p.id,sku:p.sku,name:p.name,category:p.category||"",color:p.color||"",size:p.size||"",costPrice:Number(p.cost_price||0),sellingPrice:Number(p.selling_price||0),stockQty:Number(p.stock_qty||0),lowStockLevel:Number(p.low_stock_level||3),imageUrl:p.image_url||"",notes:p.notes||""})),
     orders
   };
   return { data, updatedAt: Number.isFinite(changed) && changed > 0 ? changed : 0, customerCount:data.customers.length, orderCount:orders.length };
@@ -75,6 +81,8 @@ function apiJson(request, data, status = 200) {
 }
 async function writeWorkspace(env, data) {
   if (!data || !Array.isArray(data.customers) || !Array.isArray(data.orders)) throw new Error("Workspace must contain customers and orders arrays.");
+  await ensureInventoryTable(env);
+  const products = Array.isArray(data.products) ? data.products : [];
   if (data.customers.length > 5000 || data.orders.length > 10000) throw new Error("Workspace is larger than the allowed sync limit.");
   const statements = [];
   for (const c of data.customers) {
@@ -102,6 +110,10 @@ async function writeWorkspace(env, data) {
     const deliveryId = "WEB-" + String(o.id);
     statements.push(env.DB.prepare("INSERT INTO deliveries (id,order_id,delivery_status,delivery_method,tracking_number,delivery_date,notes) VALUES (?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET delivery_status=excluded.delivery_status,delivery_method=excluded.delivery_method,tracking_number=excluded.tracking_number,delivery_date=excluded.delivery_date,notes=excluded.notes,updated_at=CURRENT_TIMESTAMP")
       .bind(deliveryId, String(o.id), status, deliveryMethod, String(o.tracking || ""), String(o.deliveryDate || ""), String(o.notes || "")));
+  }
+  for (const p of products) {
+    if (!p?.id || !p?.sku || !p?.name) continue;
+    statements.push(env.DB.prepare("INSERT INTO inventory_products (id,sku,name,category,color,size,cost_price,selling_price,stock_qty,low_stock_level,image_url,notes) VALUES (?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET sku=excluded.sku,name=excluded.name,category=excluded.category,color=excluded.color,size=excluded.size,cost_price=excluded.cost_price,selling_price=excluded.selling_price,stock_qty=excluded.stock_qty,low_stock_level=excluded.low_stock_level,image_url=excluded.image_url,notes=excluded.notes,updated_at=CURRENT_TIMESTAMP").bind(String(p.id),String(p.sku),String(p.name),String(p.category||""),String(p.color||""),String(p.size||""),Math.max(0,safeNumber(p.costPrice)),Math.max(0,safeNumber(p.sellingPrice)),Math.max(0,Math.floor(safeNumber(p.stockQty))),Math.max(0,Math.floor(safeNumber(p.lowStockLevel,3))),String(p.imageUrl||""),String(p.notes||"")));
   }
   if (statements.length) await env.DB.batch(statements);
   return readWorkspace(env);
@@ -145,6 +157,7 @@ async function clearFlow(env,id) {
 }
 function homeKeyboard() {
   return {inline_keyboard:[
+    [{text:"📦 Products & Stock",callback_data:"menu:products"}],
     [{text:"👥 Customers",callback_data:"menu:customers"},{text:"🛍 Orders",callback_data:"menu:orders"}],
     [{text:"💳 Payments",callback_data:"menu:payments"},{text:"🚚 Deliveries",callback_data:"menu:deliveries"}],
     [{text:"📊 Shop Summary",callback_data:"menu:summary"},{text:"🔎 Search",callback_data:"menu:search"}],
@@ -184,6 +197,16 @@ async function beginDelivery(env,chat) {
 async function processFlowText(env,chat,id,input) {
   const f=await getFlow(env,id);if(!f)return false;const d=f.data||{};
   const ask=(state,prompt)=>promptFlow(env,chat,id,state,prompt,d);
+
+  if(f.state==="product_name"){d.name=input;return ask("product_sku","🏷 Product SKU / code?");}
+  if(f.state==="product_sku"){d.sku=input;return ask("product_category","🗂 Category? Send - to skip.");}
+  if(f.state==="product_category"){d.category=input==="-"?"":input;return ask("product_color","🎨 Color? Send - if not applicable.");}
+  if(f.state==="product_color"){d.color=input==="-"?"":input;return ask("product_size","📏 Size? Send - if not applicable.");}
+  if(f.state==="product_size"){d.size=input==="-"?"":input;return ask("product_price","💵 Selling price?");}
+  if(f.state==="product_price"){const n=Number(input);if(!Number.isFinite(n)||n<0){await sendMessage(env,chat,"Enter a valid price.");return true;}d.sellingPrice=n;return ask("product_cost","Cost price? Enter 0 if unknown.");}
+  if(f.state==="product_cost"){const n=Number(input);if(!Number.isFinite(n)||n<0){await sendMessage(env,chat,"Enter a valid cost.");return true;}d.costPrice=n;return ask("product_stock","📦 Current stock quantity?");}
+  if(f.state==="product_stock"){const n=Number(input);if(!Number.isInteger(n)||n<0){await sendMessage(env,chat,"Enter a whole number (0 or more).");return true;}d.stockQty=n;return ask("product_low","⚠️ Low-stock alert level?");}
+  if(f.state==="product_low"){const n=Number(input);if(!Number.isInteger(n)||n<0){await sendMessage(env,chat,"Enter a whole number (0 or more).");return true;}d.lowStockLevel=n;await ensureInventoryTable(env);const idp="PRD-"+Date.now();try{await env.DB.prepare("INSERT INTO inventory_products (id,sku,name,category,color,size,cost_price,selling_price,stock_qty,low_stock_level) VALUES (?,?,?,?,?,?,?,?,?,?)").bind(idp,d.sku,d.name,d.category,d.color,d.size,d.costPrice,d.sellingPrice,d.stockQty,d.lowStockLevel).run();}catch(e){await sendMessage(env,chat,"Could not save product. Check that the SKU is unique.");return true;}await clearFlow(env,id);await sendMessage(env,chat,"✅ Product variation added!\\n"+d.name+" · "+(d.color||"No color")+" · "+(d.size||"No size")+"\\nSKU: "+d.sku+"\\nStock: "+d.stockQty+"\\nSelling price: "+d.sellingPrice,{reply_markup:homeKeyboard()});return true;}
   if(f.state==="customer_name"){d.name=input;return ask("customer_phone","📱 Customer phone? Send - to skip.");}
   if(f.state==="customer_phone"){d.phone=input==="-"?"":input;return ask("customer_address","🏠 Customer address? Send - to skip.");}
   if(f.state==="customer_address"){d.address=input==="-"?"":input;return ask("customer_notes","📝 Notes? Send - to skip.");}
@@ -246,6 +269,10 @@ async function handleCallback(update,env) {
   if(data==="menu:language"){await sendMessage(env,chat,"Choose your language / ជ្រើសរើសភាសា",{reply_markup:{inline_keyboard:[[{text:"English",callback_data:"lang_en"},{text:"ខ្មែរ",callback_data:"lang_km"}]]}});return;}
   if(data==="menu:help"){await sendMessage(env,chat,"🌸 Use the buttons to manage customers, orders, payments and deliveries. Send /cancel to stop any guided action.",{reply_markup:homeKeyboard()});return;}
   if(data==="menu:summary"){await sendMessage(env,chat,await shopSummary(env,lang),{reply_markup:homeKeyboard()});return;}
+
+  if(data==="menu:products"){await ensureInventoryTable(env);const r=await env.DB.prepare("SELECT COUNT(*) AS variants,COALESCE(SUM(stock_qty),0) AS units,SUM(CASE WHEN stock_qty<=low_stock_level AND stock_qty>0 THEN 1 ELSE 0 END) AS low,SUM(CASE WHEN stock_qty=0 THEN 1 ELSE 0 END) AS out FROM inventory_products").first();await sendMessage(env,chat,"📦 Product & Stock\\nVariants: "+(r?.variants||0)+"\\nUnits in stock: "+(r?.units||0)+"\\nLow stock: "+(r?.low||0)+"\\nOut of stock: "+(r?.out||0),{reply_markup:{inline_keyboard:[[{text:"➕ Add product variation",callback_data:"product:add"}],[{text:"📋 View products",callback_data:"product:list"},{text:"⚠️ Low stock",callback_data:"product:low"}],[{text:"🏠 Main menu",callback_data:"menu:home"}]]}});return;}
+  if(data==="product:add"){await promptFlow(env,chat,id,"product_name","👚 Product name?");return;}
+  if(data==="product:list"||data==="product:low"){await ensureInventoryTable(env);const sql=data==="product:low"?"SELECT * FROM inventory_products WHERE stock_qty<=low_stock_level ORDER BY stock_qty,name LIMIT 20":"SELECT * FROM inventory_products ORDER BY name,color,size LIMIT 20";const r=await env.DB.prepare(sql).all();const rows=r.results||[];await sendMessage(env,chat,rows.length?"📦 Product variations\\n"+rows.map(p=>"• "+p.name+" · "+(p.color||"—")+" / "+(p.size||"—")+"\\n  SKU "+p.sku+" · Stock "+p.stock_qty+" · Price "+p.selling_price).join("\\n"):"No products recorded yet.",{reply_markup:{inline_keyboard:[[{text:"➕ Add product variation",callback_data:"product:add"}],[{text:"↩ Products menu",callback_data:"menu:products"}]]}});return;}
   if(data==="menu:customers"){await sendMessage(env,chat,"👥 Customers",{reply_markup:{inline_keyboard:[[{text:"➕ Add customer",callback_data:"customer:add"},{text:"📋 View customers",callback_data:"customer:list"}],[{text:"🏠 Main menu",callback_data:"menu:home"}]]}});return;}
   if(data==="customer:add"){await promptFlow(env,chat,id,"customer_name","👤 Customer name?");return;}
   if(data==="customer:list"){await listCustomers(env,chat);return;}
