@@ -7,5 +7,12 @@
     "binding": "ASSETS",
     "run_worker_first": true,
     "not_found_handling": "single-page-application"
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "somi-store-db-dev",
+      "database_id": "0e6f7ef0-2cef-4d72-9dfe-9ba1dbf5a005"
+    }
+  ]
 }
