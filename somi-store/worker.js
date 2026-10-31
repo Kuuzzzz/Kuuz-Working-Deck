@@ -1,5 +1,53 @@
-export default {
-  async fetch(request, env) {
-    return env.ASSETS.fetch(request);
-  }
-};
+const J={ "content-type":"application/json; charset=utf-8" };
+const id=p=>p+"-"+crypto.randomUUID();
+const money=n=>"$"+Number(n||0).toFixed(2);
+const menu=lang=>({keyboard:lang==="km"?[["➕ បង្កើតការកម្មង់","👤 បន្ថែមអតិថិជន"],["💵 កត់ត្រាការទូទាត់","🚚 ធ្វើបច្ចុប្បន្នភាពដឹកជញ្ជូន"],["🔎 ស្វែងរក","📊 សង្ខេប"],["🌐 ភាសា"]]:[["➕ New order","👤 New customer"],["💵 Record payment","🚚 Update delivery"],["🔎 Search","📊 Summary"],["🌐 Language"]],resize_keyboard:true,is_persistent:true});
+const reply=(s,status=200)=>new Response(s,{status});
+async function tg(env,method,data){const r=await fetch("https://api.telegram.org/bot"+env.TELEGRAM_BOT_TOKEN+"/"+method,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(data)});const j=await r.json();if(!j.ok)throw Error(j.description);return j.result}
+const send=(env,chat_id,text,extra={})=>tg(env,"sendMessage",{chat_id,text,...extra});
+const ask=(env,chat_id,text)=>send(env,chat_id,text,{reply_markup:{force_reply:true}});
+async function log(env,actor,action,type,entity,details={}){await env.DB.prepare("INSERT INTO activity_logs(id,actor_telegram_id,action,entity_type,entity_id,details) VALUES(?,?,?,?,?,?)").bind(id("log"),String(actor),action,type,entity,JSON.stringify(details)).run()}
+async function session(env,uid){return env.DB.prepare("SELECT current_action,session_data FROM bot_sessions WHERE telegram_id=?").bind(String(uid)).first()}
+async function setSession(env,uid,action,data={}){await env.DB.prepare("INSERT INTO bot_sessions(telegram_id,current_action,session_data) VALUES(?,?,?) ON CONFLICT(telegram_id) DO UPDATE SET current_action=excluded.current_action,session_data=excluded.session_data,updated_at=CURRENT_TIMESTAMP").bind(String(uid),action,JSON.stringify(data)).run()}
+async function clear(env,uid){await env.DB.prepare("DELETE FROM bot_sessions WHERE telegram_id=?").bind(String(uid)).run()}
+async function flow(env,chat,user,msg,s,lang){
+ let d={};try{d=JSON.parse(s.session_data||"{}")}catch{}
+ const step=s.current_action;
+ if(step==="customer"){d.name=msg;await setSession(env,user.id,"customer_phone",d);return ask(env,chat,lang==="km"?"លេខទូរស័ព្ទ? (វាយ skip ប្រសិនបើមិនមាន)":"Customer phone? (type skip if unavailable)")}
+ if(step==="customer_phone"){d.phone=/^skip$/i.test(msg)?"":msg;const cid=id("cus");await env.DB.prepare("INSERT INTO customers(id,name,phone) VALUES(?,?,?)").bind(cid,d.name,d.phone).run();await log(env,user.id,"create","customer",cid,{name:d.name});await clear(env,user.id);return send(env,chat,"Customer added 🌸 "+d.name,{reply_markup:menu(lang)})}
+ if(step==="order"){const c=await env.DB.prepare("SELECT id,name FROM customers WHERE name LIKE ? OR phone LIKE ? LIMIT 1").bind("%"+msg+"%","%"+msg+"%").first();if(!c)return ask(env,chat,"Customer not found. Try name or phone again:");d.customer_id=c.id;d.customer=c.name;await setSession(env,user.id,"order_product",d);return ask(env,chat,"What product?")}
+ if(step==="order_product"){d.product=msg;await setSession(env,user.id,"order_qty",d);return ask(env,chat,"Quantity?")}
+ if(step==="order_qty"){const q=Number(msg);if(!Number.isInteger(q)||q<1)return ask(env,chat,"Enter a whole number greater than zero.");d.qty=q;await setSession(env,user.id,"order_total",d);return ask(env,chat,"Order total in USD?")}
+ if(step==="order_total"){const total=Number(msg.replace(/[$,]/g,""));if(!Number.isFinite(total)||total<0)return ask(env,chat,"Enter a valid amount, e.g. 25.50");const oid=id("ord");await env.DB.prepare("INSERT INTO orders(id,customer_id,product,qty,unit_price,total,status,customer_status,owner_status) VALUES(?,?,?,?,?,?,'Ordered','Ordered','Need to order stock')").bind(oid,d.customer_id,d.product,d.qty,total/d.qty,total).run();await log(env,user.id,"create","order",oid,{product:d.product,total});await clear(env,user.id);return send(env,chat,"Order created 🌸\n"+oid+"\n"+d.customer+" · "+d.product+" · "+money(total),{reply_markup:menu(lang)})}
+ if(step==="payment"){const o=await env.DB.prepare("SELECT id,total FROM orders WHERE id=?").bind(msg).first();if(!o)return ask(env,chat,"Order ID not found. Enter the exact order ID:");d.order_id=o.id;d.total=o.total;await setSession(env,user.id,"payment_amount",d);return ask(env,chat,"Payment amount in USD?")}
+ if(step==="payment_amount"){const amount=Number(msg.replace(/[$,]/g,""));if(!Number.isFinite(amount)||amount<=0)return ask(env,chat,"Enter a valid amount greater than zero.");const p=await env.DB.prepare("SELECT COALESCE(SUM(amount),0) paid FROM payments WHERE order_id=?").bind(d.order_id).first();if(amount+Number(p.paid)>d.total+.0001)return ask(env,chat,"That exceeds the remaining "+money(d.total-p.paid)+". Enter a smaller amount.");const pid=id("pay");await env.DB.prepare("INSERT INTO payments(id,order_id,amount,payment_method) VALUES(?,?,?,'Telegram')").bind(pid,d.order_id,amount).run();await log(env,user.id,"create","payment",pid,{order_id:d.order_id,amount});await clear(env,user.id);return send(env,chat,"Payment recorded: "+money(amount)+"\nRemaining: "+money(d.total-p.paid-amount),{reply_markup:menu(lang)})}
+ if(step==="delivery"){const o=await env.DB.prepare("SELECT id FROM orders WHERE id=?").bind(msg).first();if(!o)return ask(env,chat,"Order ID not found. Enter exact ID:");d.order_id=o.id;await setSession(env,user.id,"delivery_status",d);return ask(env,chat,"Status? Pending / Processing / Shipped / In transit / Out for delivery / Delivered")}
+ if(step==="delivery_status"){const allowed=["Pending","Processing","Shipped","In transit","Out for delivery","Delivered"],v=allowed.find(x=>x.toLowerCase()===msg.toLowerCase());if(!v)return ask(env,chat,"Choose: "+allowed.join(" / "));d.status=v;await setSession(env,user.id,"delivery_tracking",d);return ask(env,chat,"Tracking number? (type skip if none)")}
+ if(step==="delivery_tracking"){const tracking=/^skip$/i.test(msg)?"":msg,old=await env.DB.prepare("SELECT id FROM deliveries WHERE order_id=? ORDER BY created_at DESC LIMIT 1").bind(d.order_id).first();if(old)await env.DB.prepare("UPDATE deliveries SET delivery_status=?,tracking_number=?,updated_at=CURRENT_TIMESTAMP WHERE id=?").bind(d.status,tracking,old.id).run();else await env.DB.prepare("INSERT INTO deliveries(id,order_id,delivery_status,tracking_number) VALUES(?,?,?,?)").bind(id("del"),d.order_id,d.status,tracking).run();await env.DB.prepare("UPDATE orders SET status=?,tracking_number=?,updated_at=CURRENT_TIMESTAMP WHERE id=?").bind(d.status,tracking,d.order_id).run();await log(env,user.id,"update","delivery",d.order_id,{status:d.status,tracking});await clear(env,user.id);return send(env,chat,"Delivery updated: "+d.status,{reply_markup:menu(lang)})}
+ if(step==="search"){const k="%"+msg+"%",cs=await env.DB.prepare("SELECT name,phone FROM customers WHERE name LIKE ? OR phone LIKE ? LIMIT 5").bind(k,k).all(),os=await env.DB.prepare("SELECT o.id,o.product,o.total,o.status,c.name FROM orders o JOIN customers c ON c.id=o.customer_id WHERE o.id LIKE ? OR c.name LIKE ? LIMIT 5").bind(k,k).all();const lines=[...(cs.results||[]).map(x=>"👤 "+x.name+" · "+(x.phone||"no phone")),...(os.results||[]).map(x=>"📦 "+x.id+" · "+x.name+" · "+x.product+" · "+money(x.total)+" · "+x.status)];await clear(env,user.id);return send(env,chat,lines.join("\n")||"No matching records.",{reply_markup:menu(lang)})}
+}
+async function summary(env,chat){const c=await env.DB.prepare("SELECT COUNT(*) n FROM customers").first(),o=await env.DB.prepare("SELECT COUNT(*) n,COALESCE(SUM(total),0) total FROM orders").first(),p=await env.DB.prepare("SELECT COALESCE(SUM(amount),0) paid FROM payments").first();return send(env,chat,"🌸 Somi Store summary\nCustomers: "+c.n+"\nOrders: "+o.n+"\nOrder value: "+money(o.total)+"\nPayments received: "+money(p.paid)+"\nOutstanding: "+money(o.total-p.paid))}
+async function handle(env,u){
+ const m=u.message;if(!m?.text||!m.from)return;const chat=m.chat.id,user=m.from,msg=m.text.trim(),uid=String(user.id);
+ await env.DB.prepare("INSERT INTO telegram_users(telegram_id,display_name,enabled,language) VALUES(?,?,0,'en') ON CONFLICT(telegram_id) DO UPDATE SET display_name=excluded.display_name").bind(uid,[user.first_name,user.last_name].filter(Boolean).join(" ")||user.username||"Telegram user").run();
+ const who=await env.DB.prepare("SELECT role,language FROM telegram_users WHERE telegram_id=? AND enabled=1").bind(uid).first();
+ if(!who)return send(env,chat,"Welcome to Somi Store Assistant 🌸\nYour Telegram ID: "+uid+"\nAccess is not enabled yet. Send this ID to the store owner.");
+ const lang=who.language||"en";
+ if(/^\/cancel/i.test(msg)){await clear(env,uid);return send(env,chat,"Cancelled.",{reply_markup:menu(lang)})}
+ if(/^\/start|^\/help/i.test(msg))return send(env,chat,lang==="km"?"សួស្តី! ខ្ញុំជា Somi Store Assistant 🌸 ជ្រើសរើសមុខងារខាងក្រោម។":"Welcome to Somi Store Assistant 🌸\nManage customers, orders, payments and deliveries.",{reply_markup:menu(lang)});
+ if(/^\/language|🌐/i.test(msg)){const next=lang==="en"?"km":"en";await env.DB.prepare("UPDATE telegram_users SET language=? WHERE telegram_id=?").bind(next,uid).run();return send(env,chat,next==="km"?"បានប្ដូរភាសាទៅជាខ្មែរ។":"Language changed to English.",{reply_markup:menu(next)})}
+ if(/^\/summary|📊/i.test(msg))return summary(env,chat);
+ const acts=[["customer",/^\/newcustomer|👤/i],["order",/^\/neworder|➕/i],["payment",/^\/payment|💵/i],["delivery",/^\/delivery|🚚/i],["search",/^\/search|🔎/i]];
+ for(const [a,re] of acts)if(re.test(msg)){await setSession(env,uid,a);return ask(env,chat,({customer:"Customer name?",order:"Customer name or phone?",payment:"Order ID?",delivery:"Order ID?",search:"Search name, phone or order ID?"})[a])}
+ const s=await session(env,uid);if(s?.current_action)return flow(env,chat,user,msg,s,lang);
+ let answer="I can add customers, create orders, record payments, update deliveries, search records and show a summary. Choose an action below.";
+ if(env.GEMINI_API_KEY){try{const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+(env.GEMINI_MODEL||"gemini-2.5-flash")+":generateContent",{method:"POST",headers:{"content-type":"application/json","x-goog-api-key":env.GEMINI_API_KEY},body:JSON.stringify({system_instruction:{parts:[{text:"You are Somi Store Assistant. Reply concisely in "+(lang==="km"?"Khmer":"English")+". Never claim to change store data; direct users to the menu for actions."}]},contents:[{role:"user",parts:[{text:msg}]}],generationConfig:{maxOutputTokens:180,temperature:.3}})});if(r.ok){const j=await r.json();answer=j.candidates?.[0]?.content?.parts?.map(x=>x.text||"").join("").trim()||answer}}catch(e){console.error("Gemini error",e.message)}}
+ return send(env,chat,answer,{reply_markup:menu(lang)});
+}
+export default {async fetch(req,env){
+ const url=new URL(req.url);
+ if(url.pathname==="/api/health")return Response.json({ok:true,service:"somi-store-assistant",db:!!env.DB,telegram:!!env.TELEGRAM_BOT_TOKEN,gemini:!!env.GEMINI_API_KEY});
+ if(url.pathname==="/telegram/webhook"&&req.method==="POST"){if(!env.TELEGRAM_WEBHOOK_SECRET||req.headers.get("x-telegram-bot-api-secret-token")!==env.TELEGRAM_WEBHOOK_SECRET)return reply("Unauthorized",401);try{await handle(env,await req.json());return reply("ok")}catch(e){console.error("Webhook error",e.stack||e.message);return reply("Webhook error",500)}}
+ if(url.pathname.startsWith("/api/"))return Response.json({error:"Not found"},{status:404});
+ return env.ASSETS.fetch(req);
+}};
