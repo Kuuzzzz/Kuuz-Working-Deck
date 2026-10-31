@@ -1,7 +1,14 @@
 {
-  "name": "somi-store",
+  "name": "kuuz-somi-store-dev",
   "main": "./somi-store/worker.js",
   "compatibility_date": "2026-10-20",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "somi-store-db-dev",
+      "database_id": "0e6f7ef0-2cef-4d72-9dfe-9ba1dbf5a005"
+    }
+  ],
   "assets": {
     "directory": "./somi-store",
     "binding": "ASSETS",
