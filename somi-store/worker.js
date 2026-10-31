@@ -38,7 +38,7 @@ async function readWorkspace(env) {
     env.DB.prepare("SELECT order_id, COALESCE(SUM(amount), 0) AS amount FROM payments GROUP BY order_id").all(),
     env.DB.prepare("SELECT d.order_id, d.delivery_status, d.delivery_method, d.tracking_number, d.delivery_date, d.notes FROM deliveries d INNER JOIN (SELECT order_id, MAX(created_at) AS latest FROM deliveries GROUP BY order_id) x ON x.order_id=d.order_id AND x.latest=d.created_at").all(),
     env.DB.prepare("SELECT id,sku,name,category,color,size,cost_price,selling_price,stock_qty,low_stock_level,image_url,notes FROM inventory_products ORDER BY name,color,size").all(),
-    env.DB.prepare("SELECT MAX(ts) AS changed FROM (SELECT updated_at AS ts FROM customers UNION ALL SELECT updated_at FROM orders UNION ALL SELECT created_at FROM payments UNION ALL SELECT updated_at FROM deliveries)").first()
+    env.DB.prepare("SELECT MAX(ts) AS changed FROM (SELECT updated_at AS ts FROM customers UNION ALL SELECT updated_at FROM orders UNION ALL SELECT created_at FROM payments UNION ALL SELECT updated_at FROM deliveries UNION ALL SELECT updated_at FROM inventory_products)").first()
   ]);
   const paidByOrder = new Map((paymentRows.results || []).map(x => [String(x.order_id), safeNumber(x.amount)]));
   const deliveryByOrder = new Map((deliveryRows.results || []).map(x => [String(x.order_id), x]));
@@ -66,7 +66,7 @@ async function readWorkspace(env) {
     products: (products.results || []).map(p => ({id:p.id,sku:p.sku,name:p.name,category:p.category||"",color:p.color||"",size:p.size||"",costPrice:Number(p.cost_price||0),sellingPrice:Number(p.selling_price||0),stockQty:Number(p.stock_qty||0),lowStockLevel:Number(p.low_stock_level||3),imageUrl:p.image_url||"",notes:p.notes||""})),
     orders
   };
-  return { data, updatedAt: Number.isFinite(changed) && changed > 0 ? changed : 0, customerCount:data.customers.length, orderCount:orders.length };
+  return { data, updatedAt: Number.isFinite(changed) && changed > 0 ? changed : 0, customerCount:data.customers.length, orderCount:orders.length, productCount:data.products.length };
 }
 const ALLOWED_WEB_ORIGINS = new Set([
   "https://somi-store-preview.vercel.app",
@@ -305,7 +305,7 @@ export default {
       const supplied = request.headers.get("x-somi-pin") || "";
       if (!env.TELEGRAM_WEBHOOK_SECRET || supplied !== env.TELEGRAM_WEBHOOK_SECRET) return apiJson(request, {error:"Incorrect shared access PIN. Use the existing TELEGRAM_WEBHOOK_SECRET."},401);
       try {
-        if (request.method === "GET") { const workspace = await readWorkspace(env); if (workspace.customerCount === 0 && workspace.orderCount === 0) return apiJson(request, { data: null, updatedAt: 0, customerCount: 0, orderCount: 0 }); return apiJson(request, workspace); }
+        if (request.method === "GET") { const workspace = await readWorkspace(env); if (workspace.customerCount === 0 && workspace.orderCount === 0 && workspace.productCount === 0) return apiJson(request, { data: null, updatedAt: 0, customerCount: 0, orderCount: 0, productCount: 0 }); return apiJson(request, workspace); }
         const body = await request.json();
         const result = await writeWorkspace(env, body?.data);
         return apiJson(request, {ok:true,updatedAt:result.updatedAt || Date.now(),customerCount:result.customerCount,orderCount:result.orderCount});
