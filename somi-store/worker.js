@@ -128,38 +128,145 @@ async function askGemini(env, prompt, language) {
   const result = await response.json();
   return result.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("").trim() || (language==="km"?"សូមសាកល្បងម្ដងទៀត។":"Please try again.");
 }
-async function handleTelegramUpdate(update, env) {
-  const message = update.message;
-  if (!message?.chat?.id || !message?.from?.id || typeof message.text !== "string") return;
-  const chatId = message.chat.id, telegramId = String(message.from.id), input = message.text.trim();
-  const languageRow = await env.DB.prepare("SELECT language FROM telegram_users WHERE telegram_id = ?").bind(telegramId).first();
-  const language = languageRow?.language === "km" ? "km" : "en";
-  const user = await getAuthorizedUser(env, telegramId);
-  if (!user) { await sendMessage(env, chatId, "🔒 This account is not authorized to access Somi Store. Please ask the shop owner to add your Telegram account."); return; }
-  if (input === "/start" || input === "/help") {
-    await sendMessage(env, chatId, language === "km" ? "សួស្តី! 🌸 ខ្ញុំជា Somi Store Assistant។\n\n/summary — មើលសង្ខេបហាង\n/language — ប្ដូរភាសា\n/help — ជំនួយ" : "Welcome to Somi Store Assistant 🌸\n\nYour shared shop workspace is connected.\n\n/summary — View shop summary\n/language — Change language\n/help — Help");
-    return;
-  }
-  if (input === "/language") {
-    await sendMessage(env, chatId, "Choose your language / ជ្រើសរើសភាសា", {reply_markup:{inline_keyboard:[[{text:"English",callback_data:"lang_en"},{text:"ខ្មែរ",callback_data:"lang_km"}]]}});
-    return;
-  }
-  if (input === "/summary") { await sendMessage(env, chatId, await shopSummary(env, language)); return; }
-  if (input === "/cancel") {
-    await env.DB.prepare("DELETE FROM bot_sessions WHERE telegram_id = ?").bind(telegramId).run();
-    await sendMessage(env, chatId, language === "km" ? "បានបោះបង់សកម្មភាពបច្ចុប្បន្ន។" : "Current action cancelled."); return;
-  }
-  await sendMessage(env, chatId, await askGemini(env, input, language));
+async function ensureWorkflowTable(env) {
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS telegram_workflows (telegram_id TEXT PRIMARY KEY, chat_id TEXT NOT NULL, state TEXT NOT NULL, data_json TEXT NOT NULL DEFAULT '{}', updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)").run();
 }
-async function handleCallback(update, env) {
-  const query = update.callback_query;
-  if (!query?.from?.id || !query?.message?.chat?.id) return;
-  const telegramId = String(query.from.id), user = await getAuthorizedUser(env, telegramId);
-  if (!user) { await telegramCall(env,"answerCallbackQuery",{callback_query_id:query.id,text:"Not authorized"}); return; }
-  const language = query.data === "lang_km" ? "km" : "en";
-  await setLanguage(env, telegramId, language);
-  await telegramCall(env,"answerCallbackQuery",{callback_query_id:query.id,text:"Language updated"});
-  await sendMessage(env,query.message.chat.id,language==="km"?"បានប្ដូរភាសាទៅខ្មែរ។ 🌸":"Language changed to English. 🌸");
+async function getFlow(env,id) {
+  await ensureWorkflowTable(env);
+  const row=await env.DB.prepare("SELECT state,data_json FROM telegram_workflows WHERE telegram_id=?").bind(String(id)).first();
+  if(!row)return null;let data={};try{data=JSON.parse(row.data_json||"{}")}catch{}return {state:row.state,data};
+}
+async function setFlow(env,id,chat,state,data={}) {
+  await ensureWorkflowTable(env);
+  await env.DB.prepare("INSERT INTO telegram_workflows (telegram_id,chat_id,state,data_json,updated_at) VALUES (?,?,?,?,CURRENT_TIMESTAMP) ON CONFLICT(telegram_id) DO UPDATE SET chat_id=excluded.chat_id,state=excluded.state,data_json=excluded.data_json,updated_at=CURRENT_TIMESTAMP").bind(String(id),String(chat),state,JSON.stringify(data)).run();
+}
+async function clearFlow(env,id) {
+  await ensureWorkflowTable(env);await env.DB.prepare("DELETE FROM telegram_workflows WHERE telegram_id=?").bind(String(id)).run();
+}
+function homeKeyboard() {
+  return {inline_keyboard:[
+    [{text:"👥 Customers",callback_data:"menu:customers"},{text:"🛍 Orders",callback_data:"menu:orders"}],
+    [{text:"💳 Payments",callback_data:"menu:payments"},{text:"🚚 Deliveries",callback_data:"menu:deliveries"}],
+    [{text:"📊 Shop Summary",callback_data:"menu:summary"},{text:"🔎 Search",callback_data:"menu:search"}],
+    [{text:"🌐 Language",callback_data:"menu:language"},{text:"❔ Help",callback_data:"menu:help"}]
+  ]};
+}
+async function showHome(env,chat,lang) {
+  const msg=lang==="km"?"🌸 សូមស្វាគមន៍មកកាន់ Somi Store Assistant! ជ្រើសរើសមុខងារខាងក្រោម៖":"🌸 Welcome to Somi Store Assistant! Choose a section:";
+  return sendMessage(env,chat,msg,{reply_markup:homeKeyboard()});
+}
+async function promptFlow(env,chat,id,state,prompt,data={}) {
+  await setFlow(env,id,chat,state,data);
+  await sendMessage(env,chat,prompt,{reply_markup:{inline_keyboard:[[{text:"✖ Cancel",callback_data:"flow:cancel"},{text:"🏠 Main menu",callback_data:"menu:home"}]]}});
+}
+async function listCustomers(env,chat) {
+  const r=await env.DB.prepare("SELECT name,phone FROM customers ORDER BY created_at DESC LIMIT 10").all();
+  const rows=r.results||[];return sendMessage(env,chat,rows.length?"👥 Recent customers:\n"+rows.map((x,i)=>(i+1)+". "+x.name+(x.phone?" · "+x.phone:"")).join("\n"):"No customers yet.");
+}
+async function listOrders(env,chat) {
+  const r=await env.DB.prepare("SELECT o.id,o.product,o.total,o.status,c.name AS customer_name FROM orders o LEFT JOIN customers c ON c.id=o.customer_id ORDER BY o.created_at DESC LIMIT 10").all();
+  const rows=r.results||[];return sendMessage(env,chat,rows.length?"🛍 Recent orders:\n"+rows.map(x=>"• "+x.product+" · "+(x.customer_name||"Customer")+" · "+x.total+" · "+x.status).join("\n"):"No orders yet.");
+}
+async function beginPayment(env,chat) {
+  const r=await env.DB.prepare("SELECT o.id,o.product,o.total,c.name AS customer_name,COALESCE((SELECT SUM(p.amount) FROM payments p WHERE p.order_id=o.id),0) AS paid FROM orders o LEFT JOIN customers c ON c.id=o.customer_id ORDER BY o.created_at DESC LIMIT 15").all();
+  const rows=(r.results||[]).filter(x=>Number(x.total)>Number(x.paid));
+  if(!rows.length)return sendMessage(env,chat,"No orders with an outstanding balance.");
+  const kb=rows.slice(0,10).map(x=>[{text:(x.customer_name||"Customer")+" · "+x.product+" · Due "+(Number(x.total)-Number(x.paid)),callback_data:"payorder:"+x.id}]);
+  kb.push([{text:"🏠 Main menu",callback_data:"menu:home"}]);
+  return sendMessage(env,chat,"💳 Choose an order to record a payment:",{reply_markup:{inline_keyboard:kb}});
+}
+async function beginDelivery(env,chat) {
+  const r=await env.DB.prepare("SELECT o.id,o.product,c.name AS customer_name FROM orders o LEFT JOIN customers c ON c.id=o.customer_id ORDER BY o.created_at DESC LIMIT 12").all();
+  const rows=r.results||[];if(!rows.length)return sendMessage(env,chat,"No orders to update.");
+  const kb=rows.map(x=>[{text:(x.customer_name||"Customer")+" · "+x.product,callback_data:"delorder:"+x.id}]);kb.push([{text:"🏠 Main menu",callback_data:"menu:home"}]);
+  return sendMessage(env,chat,"🚚 Choose an order:",{reply_markup:{inline_keyboard:kb}});
+}
+async function processFlowText(env,chat,id,input) {
+  const f=await getFlow(env,id);if(!f)return false;const d=f.data||{};
+  const ask=(state,prompt)=>promptFlow(env,chat,id,state,prompt,d);
+  if(f.state==="customer_name"){d.name=input;return ask("customer_phone","📱 Customer phone? Send - to skip.");}
+  if(f.state==="customer_phone"){d.phone=input==="-"?"":input;return ask("customer_address","🏠 Customer address? Send - to skip.");}
+  if(f.state==="customer_address"){d.address=input==="-"?"":input;return ask("customer_notes","📝 Notes? Send - to skip.");}
+  if(f.state==="customer_notes"){
+    const cid="CUS-"+Date.now();await env.DB.prepare("INSERT INTO customers (id,name,phone,email,address,notes) VALUES (?,?,?,'',?,?)").bind(cid,d.name,d.phone,d.address,input==="-"?"":input).run();await clearFlow(env,id);
+    await sendMessage(env,chat,"✅ Customer added!\n"+d.name+"\n"+(d.phone||"No phone"),{reply_markup:homeKeyboard()});return true;
+  }
+  if(f.state==="order_customer"){
+    const c=await env.DB.prepare("SELECT id,name FROM customers WHERE id=? OR LOWER(name)=LOWER(?) LIMIT 1").bind(input,input).first();
+    if(!c){await sendMessage(env,chat,"Customer not found. Enter the exact customer name or ID, or add the customer first.");return true;}
+    d.customerId=c.id;d.customerName=c.name;return ask("order_product","🛍 Product name?");
+  }
+  if(f.state==="order_product"){d.product=input;return ask("order_qty","🔢 Quantity?");}
+  if(f.state==="order_qty"){const n=Number(input);if(!Number.isInteger(n)||n<1){await sendMessage(env,chat,"Enter a whole number above zero.");return true;}d.qty=n;return ask("order_price","💰 Unit price?");}
+  if(f.state==="order_price"){const n=Number(input);if(!Number.isFinite(n)||n<0){await sendMessage(env,chat,"Enter a valid amount.");return true;}d.price=n;return ask("order_deposit","💳 Deposit received? Enter 0 if none.");}
+  if(f.state==="order_deposit"){
+    const dep=Number(input),total=d.qty*d.price;if(!Number.isFinite(dep)||dep<0||dep>total){await sendMessage(env,chat,"Enter a valid deposit between 0 and "+total+".");return true;}
+    const oid="ORD-"+Date.now();await env.DB.prepare("INSERT INTO orders (id,customer_id,product,qty,unit_price,total,status,customer_status,owner_status) VALUES (?,?,?,?,?,?,?,?,?)").bind(oid,d.customerId,d.product,d.qty,d.price,total,"Ordered","Ordered","Not started").run();
+    if(dep>0)await env.DB.prepare("INSERT INTO payments (id,order_id,amount,payment_method,payment_date,notes) VALUES (?,?,?,?,?,?)").bind("PAY-"+Date.now(),oid,dep,"Telegram",new Date().toISOString().slice(0,10),"Initial deposit").run();
+    await clearFlow(env,id);await sendMessage(env,chat,"✅ Order created!\n"+oid+"\nCustomer: "+d.customerName+"\nProduct: "+d.product+"\nTotal: "+total+"\nPaid: "+dep+"\nRemaining: "+(total-dep),{reply_markup:homeKeyboard()});return true;
+  }
+  if(f.state==="payment_amount"){
+    const n=Number(input);if(!Number.isFinite(n)||n<=0||n>d.remaining){await sendMessage(env,chat,"Enter an amount greater than 0 and no more than "+d.remaining+".");return true;}d.amount=n;return ask("payment_method","💳 Payment method? (Cash, ABA, ACLEDA...)");
+  }
+  if(f.state==="payment_method"){
+    await env.DB.prepare("INSERT INTO payments (id,order_id,amount,payment_method,payment_date,notes) VALUES (?,?,?,?,?,?)").bind("PAY-"+Date.now(),d.orderId,d.amount,input,new Date().toISOString().slice(0,10),"Recorded via Telegram").run();
+    await clearFlow(env,id);await sendMessage(env,chat,"✅ Payment recorded!\nReceived: "+d.amount+"\nRemaining: "+(d.remaining-d.amount),{reply_markup:homeKeyboard()});return true;
+  }
+  if(f.state==="delivery_tracking"){
+    await env.DB.prepare("UPDATE orders SET tracking_number=?,updated_at=CURRENT_TIMESTAMP WHERE id=?").bind(input==="-"?"":input,d.orderId).run();
+    await env.DB.prepare("INSERT INTO deliveries (id,order_id,delivery_status,delivery_method,tracking_number,delivery_date,notes) VALUES (?,?,?,?,?,?,?)").bind("DEL-"+Date.now(),d.orderId,d.status,"",input==="-"?"":input,"","Updated in Telegram").run();
+    await clearFlow(env,id);await sendMessage(env,chat,"✅ Delivery updated!\nStatus: "+d.status+"\nTracking: "+(input==="-"?"—":input),{reply_markup:homeKeyboard()});return true;
+  }
+  if(f.state==="search_query"){
+    const t="%"+input+"%";const [c,o]=await Promise.all([env.DB.prepare("SELECT name,phone FROM customers WHERE name LIKE ? OR phone LIKE ? LIMIT 5").bind(t,t).all(),env.DB.prepare("SELECT o.product,o.total,o.status,c.name AS customer_name FROM orders o LEFT JOIN customers c ON c.id=o.customer_id WHERE o.product LIKE ? OR o.id LIKE ? OR c.name LIKE ? LIMIT 5").bind(t,t,t).all()]);
+    const lines=["🔎 Search results","Customers:",...(c.results||[]).map(x=>"• "+x.name+" "+(x.phone||"")),"Orders:",...(o.results||[]).map(x=>"• "+x.product+" · "+(x.customer_name||"")+" · "+x.total+" · "+x.status)];
+    await clearFlow(env,id);await sendMessage(env,chat,lines.join("\n"),{reply_markup:homeKeyboard()});return true;
+  }
+  return false;
+}
+async function handleTelegramUpdate(update,env) {
+  const m=update.message;if(!m?.chat?.id||!m?.from?.id||typeof m.text!=="string")return;
+  const chat=m.chat.id,id=String(m.from.id),input=m.text.trim();
+  const user=await getAuthorizedUser(env,id);if(!user){await sendMessage(env,chat,"🔒 This account is not authorized to access Somi Store.");return;}
+  const lr=await env.DB.prepare("SELECT language FROM telegram_users WHERE telegram_id=?").bind(id).first();const lang=lr?.language==="km"?"km":"en";
+  if(input==="/start"||input==="/menu"||input==="/help"){await clearFlow(env,id);await showHome(env,chat,lang);return;}
+  if(input==="/cancel"){await clearFlow(env,id);await showHome(env,chat,lang);return;}
+  if(input==="/summary"){await sendMessage(env,chat,await shopSummary(env,lang),{reply_markup:homeKeyboard()});return;}
+  if(input==="/language"){await sendMessage(env,chat,"Choose your language / ជ្រើសរើសភាសា",{reply_markup:{inline_keyboard:[[{text:"English",callback_data:"lang_en"},{text:"ខ្មែរ",callback_data:"lang_km"}]]}});return;}
+  if(await processFlowText(env,chat,id,input))return;
+  await sendMessage(env,chat,await askGemini(env,input,lang),{reply_markup:homeKeyboard()});
+}
+async function handleCallback(update,env) {
+  const q=update.callback_query;if(!q?.from?.id||!q?.message?.chat?.id)return;
+  const id=String(q.from.id),chat=q.message.chat.id,user=await getAuthorizedUser(env,id);if(!user){await telegramCall(env,"answerCallbackQuery",{callback_query_id:q.id,text:"Not authorized"});return;}
+  await telegramCall(env,"answerCallbackQuery",{callback_query_id:q.id});
+  const data=q.data||"",lr=await env.DB.prepare("SELECT language FROM telegram_users WHERE telegram_id=?").bind(id).first(),lang=lr?.language==="km"?"km":"en";
+  if(data==="lang_en"||data==="lang_km"){await setLanguage(env,id,data==="lang_km"?"km":"en");await showHome(env,chat,data==="lang_km"?"km":"en");return;}
+  if(data==="flow:cancel"||data==="menu:home"){await clearFlow(env,id);await showHome(env,chat,lang);return;}
+  if(data==="menu:language"){await sendMessage(env,chat,"Choose your language / ជ្រើសរើសភាសា",{reply_markup:{inline_keyboard:[[{text:"English",callback_data:"lang_en"},{text:"ខ្មែរ",callback_data:"lang_km"}]]}});return;}
+  if(data==="menu:help"){await sendMessage(env,chat,"🌸 Use the buttons to manage customers, orders, payments and deliveries. Send /cancel to stop any guided action.",{reply_markup:homeKeyboard()});return;}
+  if(data==="menu:summary"){await sendMessage(env,chat,await shopSummary(env,lang),{reply_markup:homeKeyboard()});return;}
+  if(data==="menu:customers"){await sendMessage(env,chat,"👥 Customers",{reply_markup:{inline_keyboard:[[{text:"➕ Add customer",callback_data:"customer:add"},{text:"📋 View customers",callback_data:"customer:list"}],[{text:"🏠 Main menu",callback_data:"menu:home"}]]}});return;}
+  if(data==="customer:add"){await promptFlow(env,chat,id,"customer_name","👤 Customer name?");return;}
+  if(data==="customer:list"){await listCustomers(env,chat);return;}
+  if(data==="menu:orders"){await sendMessage(env,chat,"🛍 Orders",{reply_markup:{inline_keyboard:[[{text:"➕ Create order",callback_data:"order:add"},{text:"📋 View orders",callback_data:"order:list"}],[{text:"🏠 Main menu",callback_data:"menu:home"}]]}});return;}
+  if(data==="order:add"){const n=await env.DB.prepare("SELECT COUNT(*) AS n FROM customers").first();if(!Number(n?.n)){await sendMessage(env,chat,"Add a customer first.",{reply_markup:{inline_keyboard:[[{text:"➕ Add customer",callback_data:"customer:add"}]]}});return;}await promptFlow(env,chat,id,"order_customer","👤 Enter exact customer name or ID.");return;}
+  if(data==="order:list"){await listOrders(env,chat);return;}
+  if(data==="menu:payments"){await beginPayment(env,chat);return;}
+  if(data==="menu:deliveries"){await beginDelivery(env,chat);return;}
+  if(data==="menu:search"){await promptFlow(env,chat,id,"search_query","🔎 Enter customer name, phone, product or order ID.");return;}
+  if(data.startsWith("payorder:")){
+    const oid=data.slice(9),o=await env.DB.prepare("SELECT id,total,COALESCE((SELECT SUM(amount) FROM payments WHERE order_id=orders.id),0) AS paid FROM orders WHERE id=?").bind(oid).first();
+    if(!o)return sendMessage(env,chat,"Order not found.");const due=Number(o.total)-Number(o.paid);if(due<=0)return sendMessage(env,chat,"This order is fully paid.");
+    await promptFlow(env,chat,id,"payment_amount","Order "+oid+"\nRemaining: "+due+"\n\nPayment amount?",{orderId:oid,remaining:due});return;
+  }
+  if(data.startsWith("delorder:")){
+    const oid=data.slice(9);await setFlow(env,id,chat,"delivery_status",{orderId:oid});
+    await sendMessage(env,chat,"Choose delivery status:",{reply_markup:{inline_keyboard:[[{text:"Preparing",callback_data:"delstatus:Preparing"},{text:"Ready",callback_data:"delstatus:Ready"}],[{text:"Shipped",callback_data:"delstatus:Shipped"},{text:"Delivered",callback_data:"delstatus:Delivered"}],[{text:"Cancelled",callback_data:"delstatus:Cancelled"}]]}});return;
+  }
+  if(data.startsWith("delstatus:")){
+    const f=await getFlow(env,id);if(!f?.data?.orderId)return;await promptFlow(env,chat,id,"delivery_tracking","📦 Enter tracking number (or - to skip).",{orderId:f.data.orderId,status:data.slice(10)});return;
+  }
 }
 const connectPage = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Connect Somi Store Telegram</title><style>body{font:16px system-ui;background:#fff7fb;color:#29202a;display:grid;place-items:center;min-height:100vh;margin:0}.card{background:white;padding:28px;border-radius:18px;max-width:420px;width:calc(100% - 56px);box-shadow:0 8px 32px #5b17401a}input,button{box-sizing:border-box;width:100%;padding:13px;border-radius:10px;margin-top:12px;font:inherit}input{border:1px solid #ddd}button{border:0;background:#e94b91;color:white;font-weight:700;cursor:pointer}#result{white-space:pre-wrap;margin-top:16px}</style></head><body><main class="card"><h2>🌸 Connect KuuzBot</h2><p>Enter your existing TELEGRAM_WEBHOOK_SECRET from your Cloudflare Worker settings. It stays in this browser and is sent securely to your development Worker.</p><input id="secret" type="password" autocomplete="off" placeholder="Webhook secret"><button id="connect">Connect Telegram</button><div id="result" role="status"></div></main><script>document.getElementById('connect').addEventListener('click',async()=>{const secret=document.getElementById('secret').value;const result=document.getElementById('result');if(!secret){result.textContent='Please enter the webhook secret.';return;}result.textContent='Connecting…';try{const r=await fetch('/setup-webhook',{method:'POST',headers:{'X-Setup-Secret':secret}});const d=await r.json();result.textContent=d.ok?'✅ Telegram webhook connected! Open Telegram and send /start to @KuuzBot.':('❌ '+(d.error||'Connection failed'));if(d.ok)document.getElementById('secret').value='';}catch(e){result.textContent='Connection failed. Please try again.';}});</script></main></body></html>`;
 export default {
