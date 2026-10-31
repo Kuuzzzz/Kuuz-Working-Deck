@@ -30,7 +30,7 @@ function workspaceDate(value) {
 async function readWorkspace(env) {
   const [customers, orderRows, paymentRows, deliveryRows, revision] = await Promise.all([
     env.DB.prepare("SELECT id, name, phone, email, address, notes FROM customers ORDER BY created_at, id").all(),
-    env.DB.prepare("SELECT id, customer_id, product, qty, unit_price, total, status, customer_status, owner_status, delivery_method, tracking_number, color, size, delivery_date, notes FROM orders ORDER BY created_at, id").all(),
+    env.DB.prepare("SELECT id, customer_id, product, qty, unit_price, total, status, customer_status, owner_status, delivery_method, tracking_number, color, size, delivery_date, notes, created_at FROM orders ORDER BY created_at, id").all(),
     env.DB.prepare("SELECT order_id, COALESCE(SUM(amount), 0) AS amount FROM payments GROUP BY order_id").all(),
     env.DB.prepare("SELECT d.order_id, d.delivery_status, d.delivery_method, d.tracking_number, d.delivery_date, d.notes FROM deliveries d INNER JOIN (SELECT order_id, MAX(created_at) AS latest FROM deliveries GROUP BY order_id) x ON x.order_id=d.order_id AND x.latest=d.created_at").all(),
     env.DB.prepare("SELECT MAX(ts) AS changed FROM (SELECT updated_at AS ts FROM customers UNION ALL SELECT updated_at FROM orders UNION ALL SELECT created_at FROM payments UNION ALL SELECT updated_at FROM deliveries)").first()
