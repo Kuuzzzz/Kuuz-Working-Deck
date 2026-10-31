@@ -159,7 +159,7 @@ export default {
       const supplied = request.headers.get("x-somi-pin") || "";
       if (!env.TELEGRAM_WEBHOOK_SECRET || supplied !== env.TELEGRAM_WEBHOOK_SECRET) return json({error:"Incorrect shared access PIN. Use the existing TELEGRAM_WEBHOOK_SECRET."},401);
       try {
-        if (request.method === "GET") return json(await readWorkspace(env));
+        if (request.method === "GET") { const workspace = await readWorkspace(env); if (workspace.customerCount === 0 && workspace.orderCount === 0) return json({ data: null, updatedAt: 0, customerCount: 0, orderCount: 0 }); return json(workspace); }
         const body = await request.json();
         const result = await writeWorkspace(env, body?.data);
         return json({ok:true,updatedAt:result.updatedAt || Date.now(),customerCount:result.customerCount,orderCount:result.orderCount});
